@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Details - ACE Engineering College</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 flex h-screen overflow-hidden">
+
+    <div id="quiz-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 backdrop-blur-sm p-4">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-2xl overflow-y-auto max-h-[90vh]">
+            <h2 id="modal-title" class="text-xl font-bold text-gray-800 mb-4">Create New Quiz</h2>
+            <form id="quiz-form" class="space-y-4">
+                <input type="hidden" id="edit-quiz-id">
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Quiz Title</label>
+                    <input type="text" id="quiz-title" placeholder="e.g., Midterm Assessment" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500" required>
+                </div>
+                
+                <div id="questions-container" class="space-y-6 mt-4">
+                    </div>
+
+                <button type="button" onclick="addQuestionBlock()" class="w-full py-3 border-2 border-dashed border-gray-300 text-gray-500 rounded-lg font-medium hover:bg-gray-50 hover:text-blue-600 transition">
+                    + Add Another Question
+                </button>
+
+                <div class="mt-6 flex justify-end gap-3 pt-4 border-t">
+                    <button type="button" onclick="closeQuizModal()" class="px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200">Cancel</button>
+                    <button type="submit" id="save-quiz-btn" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 shadow-sm">Save Quiz</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="results-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 backdrop-blur-sm p-4">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-3xl overflow-y-auto max-h-[90vh]">
+            <div class="flex justify-between items-center border-b pb-4 mb-4">
+                <h2 class="text-xl font-bold text-gray-800">Student Submissions</h2>
+                <button onclick="closeResultsModal()" class="text-gray-400 hover:text-gray-800">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-gray-50 text-gray-600 text-sm border-b">
+                        <tr>
+                            <th class="p-3 font-medium">Student Name</th>
+                            <th class="p-3 font-medium">Roll Number</th>
+                            <th class="p-3 font-medium text-right">Score</th>
+                            <th class="p-3 font-medium text-right">Submitted At</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-table-body" class="divide-y divide-gray-100">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <aside class="bg-gray-900 text-white w-64 flex-shrink-0 hidden md:flex flex-col z-30">
+        <div class="p-6">
+            <h2 class="text-xl font-bold">Instructor Panel</h2>
+            <p class="text-gray-400 text-sm mt-1">CSE (AI & ML) Dept</p>
+        </div>
+        <nav class="mt-4">
+            <a href="/teacher-dashboard.html" class="block py-3 px-6 text-gray-400 hover:bg-gray-800 transition">Dashboard</a>
+            <a href="/manage-attendance.html" class="block py-3 px-6 text-gray-400 hover:bg-gray-800 transition">Manage Attendance</a>
+            <a href="/manage-courses.html" class="block py-3 px-6 bg-gray-800 border-l-4 border-blue-500 text-white">Course Management</a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen overflow-y-auto w-full">
+        <header class="bg-white shadow-sm px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button onclick="window.location.href='/manage-courses.html'" class="text-gray-500 hover:text-blue-600 transition font-bold">&larr; Back</button>
+                <h1 class="text-xl font-semibold text-gray-800">Course Details</h1>
+            </div>
+            <button onclick="logout()" class="text-gray-500 hover:text-gray-700 font-medium">Logout</button>
+        </header>
+
+        <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 flex justify-between items-start">
+                <div>
+                    <h1 id="display-course-title" class="text-3xl font-bold text-gray-900 mb-2">Loading...</h1>
+                    <p id="display-course-desc" class="text-gray-600 max-w-2xl">...</p>
+                </div>
+            </div>
+
+            <div class="border-b border-gray-200">
+                <nav class="-mb-px flex space-x-8">
+                    <button onclick="switchTab('materials')" id="tab-materials" class="border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Course Materials</button>
+                    <button onclick="switchTab('quizzes')" id="tab-quizzes" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Quizzes & Assignments</button>
+                </nav>
+            </div>
+
+            <div id="section-materials" class="block space-y-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800">Uploaded Files</h2>
+                    <button onclick="window.location.href='/teacher-dashboard.html'" class="text-sm bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-semibold hover:bg-blue-200 transition">Upload New File</button>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50 border-b border-gray-100">
+                            <tr>
+                                <th class="p-4 text-sm font-medium text-gray-500">File Name</th>
+                                <th class="p-4 text-sm font-medium text-gray-500">Type</th>
+                                <th class="p-4 text-sm font-medium text-gray-500">Date Uploaded</th>
+                                <th class="p-4 text-sm font-medium text-gray-500 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="materials-list" class="divide-y divide-gray-100">
+                            <tr><td colspan="4" class="p-8 text-center text-gray-500">Loading materials...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="section-quizzes" class="hidden space-y-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800">Active Quizzes</h2>
+                    <button onclick="openQuizModal()" class="text-sm bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 shadow-sm">+ Create Quiz</button>
+                </div>
+                <div id="quizzes-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="col-span-full p-8 text-center text-gray-500 bg-white rounded-xl border border-dashed">Loading quizzes...</div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        if (localStorage.getItem('userRole') !== 'teacher') window.location.href = '/';
+        const courseId = new URLSearchParams(window.location.search).get('id');
+        if (!courseId) window.location.href = '/manage-courses.html';
+        function logout() { localStorage.clear(); window.location.href = '/'; }
+
+        // Globals to track state
+        let currentQuizzes = []; 
+        let questionCounter = 0;
+
+        function switchTab(tab) {
+            document.getElementById('section-materials').classList.toggle('hidden', tab !== 'materials');
+            document.getElementById('section-quizzes').classList.toggle('hidden', tab !== 'quizzes');
+            
+            document.getElementById('tab-materials').className = tab === 'materials' 
+                ? 'border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm' 
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm';
+            
+            document.getElementById('tab-quizzes').className = tab === 'quizzes' 
+                ? 'border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm' 
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm';
+        }
+
+        async function loadCourseData() {
+            try {
+                const courseRes = await fetch(`/api/courses/details/${courseId}`);
+                const course = await courseRes.json();
+                document.getElementById('display-course-title').textContent = course.title;
+                document.getElementById('display-course-desc').textContent = course.description || '';
+                loadMaterials();
+                loadQuizzes();
+            } catch (err) { alert('Error loading course.'); }
+        }
+
+        async function loadMaterials() {
+            const list = document.getElementById('materials-list');
+            try {
+                const res = await fetch(`/api/content/course/${courseId}`);
+                const materials = await res.json();
+                list.innerHTML = '';
+                if (materials.length === 0) return list.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-500">No materials uploaded yet.</td></tr>`;
+                materials.forEach(mat => {
+                    list.innerHTML += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-4 font-medium"><a href="${mat.file_url}" target="_blank" class="hover:text-blue-600 underline">${mat.title}</a></td>
+                            <td class="p-4"><span class="bg-gray-100 px-2 py-1 rounded text-xs font-bold uppercase">${mat.type}</span></td>
+                            <td class="p-4 text-gray-500 text-sm">${new Date(mat.uploaded_at).toLocaleDateString()}</td>
+                            <td class="p-4 text-right space-x-2">
+                                <button onclick="deleteContent(${mat.id})" class="text-red-600 hover:underline text-sm font-medium">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch(e) { }
+        }
+
+        async function deleteContent(id) {
+            if(!confirm("Delete this file permanently?")) return;
+            await fetch(`/api/content/${id}`, { method: 'DELETE' });
+            loadMaterials();
+        }
+
+        // ==========================================
+        // QUIZ DYNAMIC BUILDER & CRUD
+        // ==========================================
+        
+        async function loadQuizzes() {
+            const list = document.getElementById('quizzes-list');
+            try {
+                const res = await fetch(`/api/quizzes/course/${courseId}`);
+                currentQuizzes = await res.json();
+                
+                list.innerHTML = '';
+                if (currentQuizzes.length === 0) return list.innerHTML = `<div class="col-span-full p-8 text-center text-gray-500 bg-white border border-dashed rounded-xl">No quizzes created yet.</div>`;
+
+                currentQuizzes.forEach(quiz => {
+                    list.innerHTML += `
+                        <div class="bg-white p-6 rounded-xl border shadow-sm hover:shadow-md transition">
+                            <div class="flex justify-between items-start mb-1">
+                                <h3 class="font-bold text-lg text-gray-800">${quiz.title}</h3>
+                                <button onclick="deleteQuiz(${quiz.id})" class="text-red-500 hover:bg-red-50 p-1 rounded transition" title="Delete Quiz">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </div>
+                            <p class="text-sm text-gray-500 mb-4">${quiz.questions.length} Question(s)</p>
+                            <div class="flex gap-2">
+                                <button onclick="openQuizModal(${quiz.id})" class="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-200">Edit Quiz</button>
+                                <button onclick="viewResults(${quiz.id})" class="flex-1 bg-green-50 text-green-700 py-2 rounded-lg text-sm font-medium hover:bg-green-100">View Results</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch(e) { }
+        }
+
+        async function deleteQuiz(id) {
+            if(!confirm("Are you sure you want to permanently delete this quiz and all student scores?")) return;
+            await fetch(`/api/quizzes/${id}`, { method: 'DELETE' });
+            loadQuizzes();
+        }
+
+        // Generate a blank Question Block
+        function addQuestionBlock(existingData = null) {
+            questionCounter++;
+            const id = questionCounter;
+            const container = document.getElementById('questions-container');
+
+            // Set default values if editing, else empty strings
+            const qText = existingData ? existingData.question : '';
+            const oA = existingData ? existingData.options.A : '';
+            const oB = existingData ? existingData.options.B : '';
+            const oC = existingData ? existingData.options.C : '';
+            const oD = existingData ? existingData.options.D : '';
+            const corrects = existingData ? existingData.correct_answers : [];
+
+            const isChecked = (val) => corrects.includes(val) ? 'checked' : '';
+
+            const block = document.createElement('div');
+            block.className = 'question-block bg-gray-50 p-5 rounded-lg border border-gray-200 relative';
+            block.id = `qb-${id}`;
+            block.innerHTML = `
+                <button type="button" onclick="this.parentElement.remove()" class="absolute top-4 right-4 text-red-500 text-sm font-bold hover:underline">Remove</button>
+                <h3 class="font-bold text-gray-700 mb-3 border-b pb-2">Question</h3>
+                <textarea class="q-text w-full px-4 py-2 mb-3 border rounded-lg" rows="2" placeholder="Enter question..." required>${qText}</textarea>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                    <div class="flex items-center bg-white border rounded-lg"><span class="bg-gray-100 px-3 py-2 font-bold border-r">A</span><input type="text" class="q-optA w-full px-3 py-2 outline-none" value="${oA}" required></div>
+                    <div class="flex items-center bg-white border rounded-lg"><span class="bg-gray-100 px-3 py-2 font-bold border-r">B</span><input type="text" class="q-optB w-full px-3 py-2 outline-none" value="${oB}" required></div>
+                    <div class="flex items-center bg-white border rounded-lg"><span class="bg-gray-100 px-3 py-2 font-bold border-r">C</span><input type="text" class="q-optC w-full px-3 py-2 outline-none" value="${oC}" required></div>
+                    <div class="flex items-center bg-white border rounded-lg"><span class="bg-gray-100 px-3 py-2 font-bold border-r">D</span><input type="text" class="q-optD w-full px-3 py-2 outline-none" value="${oD}" required></div>
+                </div>
+
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Select Correct Answer(s):</label>
+                <div class="flex gap-4">
+                    <label class="flex items-center space-x-2 bg-white px-3 py-2 border rounded hover:bg-green-50"><input type="checkbox" value="A" class="q-correct w-4 h-4 text-green-600" ${isChecked('A')}><span class="font-medium">A</span></label>
+                    <label class="flex items-center space-x-2 bg-white px-3 py-2 border rounded hover:bg-green-50"><input type="checkbox" value="B" class="q-correct w-4 h-4 text-green-600" ${isChecked('B')}><span class="font-medium">B</span></label>
+                    <label class="flex items-center space-x-2 bg-white px-3 py-2 border rounded hover:bg-green-50"><input type="checkbox" value="C" class="q-correct w-4 h-4 text-green-600" ${isChecked('C')}><span class="font-medium">C</span></label>
+                    <label class="flex items-center space-x-2 bg-white px-3 py-2 border rounded hover:bg-green-50"><input type="checkbox" value="D" class="q-correct w-4 h-4 text-green-600" ${isChecked('D')}><span class="font-medium">D</span></label>
+                </div>
+            `;
+            container.appendChild(block);
+        }
+
+        // Open Modal for Create (id=null) or Edit (id=existing)
+        function openQuizModal(quizId = null) {
+            document.getElementById('questions-container').innerHTML = ''; // Clear previous form
+            
+            if (quizId) {
+                // EDIT MODE
+                const quiz = currentQuizzes.find(q => q.id === quizId);
+                document.getElementById('modal-title').textContent = 'Edit Quiz';
+                document.getElementById('edit-quiz-id').value = quizId;
+                document.getElementById('quiz-title').value = quiz.title;
+                quiz.questions.forEach(qData => addQuestionBlock(qData));
+            } else {
+                // CREATE MODE
+                document.getElementById('modal-title').textContent = 'Create New Quiz';
+                document.getElementById('edit-quiz-id').value = '';
+                document.getElementById('quiz-title').value = '';
+                addQuestionBlock(); // Start with 1 blank question
+            }
+
+            document.getElementById('quiz-modal').classList.remove('hidden');
+            document.getElementById('quiz-modal').classList.add('flex');
+        }
+
+        function closeQuizModal() {
+            document.getElementById('quiz-modal').classList.add('hidden');
+            document.getElementById('quiz-modal').classList.remove('flex');
+        }
+
+        // Save Logic (Handles both Create and Edit)
+        document.getElementById('quiz-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const blocks = document.querySelectorAll('.question-block');
+            if (blocks.length === 0) return alert("You must add at least one question!");
+
+            const questions = [];
+            let isValid = true;
+
+            // Loop through dynamic blocks and extract data
+            blocks.forEach(block => {
+                const qText = block.querySelector('.q-text').value;
+                const optA = block.querySelector('.q-optA').value;
+                const optB = block.querySelector('.q-optB').value;
+                const optC = block.querySelector('.q-optC').value;
+                const optD = block.querySelector('.q-optD').value;
+                const checked = Array.from(block.querySelectorAll('.q-correct:checked')).map(cb => cb.value);
+
+                if (checked.length === 0) {
+                    alert(`Missing correct answer selection on a question!`);
+                    isValid = false;
+                    return;
+                }
+
+                questions.push({
+                    question: qText,
+                    options: { A: optA, B: optB, C: optC, D: optD },
+                    correct_answers: checked
+                });
+            });
+
+            if (!isValid) return;
+
+            const btn = document.getElementById('save-quiz-btn'); btn.textContent = 'Saving...'; btn.disabled = true;
+            
+            const quizId = document.getElementById('edit-quiz-id').value;
+            const payload = {
+                course_id: courseId,
+                title: document.getElementById('quiz-title').value,
+                questions: questions
+            };
+
+            try {
+                // If we have an ID, do a PUT (Edit). Otherwise, do a POST (Create).
+                const url = quizId ? `/api/quizzes/${quizId}` : `/api/quizzes/create`;
+                const method = quizId ? 'PUT' : 'POST';
+
+                const res = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                
+                if (res.ok) {
+                    closeQuizModal();
+                    loadQuizzes();
+                } else { alert("Failed to save quiz."); }
+            } catch(err) { alert("Network error."); }
+            finally { btn.textContent = 'Save Quiz'; btn.disabled = false; }
+        });
+
+        // ==========================================
+        // QUIZ RESULTS VIEW
+        // ==========================================
+        async function viewResults(quizId) {
+            const tbody = document.getElementById('results-table-body');
+            tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-gray-500">Loading results...</td></tr>';
+            document.getElementById('results-modal').classList.remove('hidden');
+            document.getElementById('results-modal').classList.add('flex');
+
+            try {
+                const res = await fetch(`/api/quizzes/${quizId}/results`);
+                const results = await res.json();
+                
+                if (results.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-gray-500">No students have taken this quiz yet.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                results.forEach(r => {
+                    const date = new Date(r.submitted_at).toLocaleString();
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-3 font-bold text-gray-800">${r.name}</td>
+                            <td class="p-3 text-gray-500 font-mono text-sm">${r.roll_number}</td>
+                            <td class="p-3 text-right"><span class="bg-green-100 text-green-800 px-2 py-1 rounded font-bold">${r.score}%</span></td>
+                            <td class="p-3 text-right text-gray-500 text-sm">${date}</td>
+                        </tr>
+                    `;
+                });
+            } catch(e) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-red-500">Failed to load results.</td></tr>';
+            }
+        }
+
+        function closeResultsModal() {
+            document.getElementById('results-modal').classList.add('hidden');
+            document.getElementById('results-modal').classList.remove('flex');
+        }
+
+        document.addEventListener('DOMContentLoaded', loadCourseData);
+    </script>
+</body>
+</html>

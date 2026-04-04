@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course - ACE Engineering College</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 flex h-screen overflow-hidden">
+
+    <div id="viewer-modal" class="fixed inset-0 bg-black bg-opacity-80 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden">
+            <div class="bg-gray-900 text-white px-6 py-4 flex justify-between items-center">
+                <h2 id="viewer-title" class="text-lg font-bold">Document Viewer</h2>
+                <button onclick="closeViewer()" class="text-gray-400 hover:text-white font-bold text-2xl">&times;</button>
+            </div>
+            <iframe id="document-frame" class="w-full flex-1 bg-gray-100" src=""></iframe>
+            <div class="bg-gray-100 p-2 text-center text-sm text-gray-500">
+                Note: Browsers natively support PDF viewing. Word/PPT files may prompt a download depending on your browser extensions.
+            </div>
+        </div>
+    </div>
+
+    <div id="take-quiz-modal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50 backdrop-blur-sm p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-3xl overflow-y-auto max-h-[90vh]">
+            <div class="border-b pb-4 mb-6 flex justify-between items-center">
+                <div>
+                    <h2 id="taking-quiz-title" class="text-2xl font-bold text-gray-800">Quiz Title</h2>
+                    <p class="text-gray-500 text-sm mt-1">Select all correct answers for each question.</p>
+                </div>
+                <button onclick="closeQuizModal()" class="text-gray-400 hover:text-gray-800 font-bold text-xl">&times;</button>
+            </div>
+
+            <form id="submit-quiz-form" class="space-y-8">
+                <input type="hidden" id="active-quiz-id">
+                <div id="quiz-questions-container" class="space-y-6"></div>
+                <div class="mt-8 pt-6 border-t flex justify-end gap-4">
+                    <button type="button" onclick="closeQuizModal()" class="px-6 py-2 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Cancel</button>
+                    <button type="submit" id="submit-quiz-btn" class="px-6 py-2 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md">Submit Answers</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <main class="flex-1 flex flex-col h-screen overflow-y-auto w-full">
+        <header class="bg-white shadow-sm px-6 py-4 flex items-center justify-between sticky top-0 z-40">
+            <div class="flex items-center gap-4">
+                <button onclick="window.location.href='/student-dashboard.html'" class="text-gray-500 hover:text-blue-600 transition font-bold">&larr; Dashboard</button>
+                <h1 class="text-xl font-bold text-gray-800" id="course-title-header">Loading Course...</h1>
+            </div>
+        </header>
+
+        <div class="p-6 space-y-6 max-w-6xl mx-auto w-full mt-4">
+            
+            <div class="border-b border-gray-200">
+                <nav class="-mb-px flex space-x-8">
+                    <button onclick="switchTab('materials')" id="tab-materials" class="border-blue-500 text-blue-600 py-4 px-1 border-b-2 font-bold text-sm">Course Materials</button>
+                    <button onclick="switchTab('quizzes')" id="tab-quizzes" class="border-transparent text-gray-500 hover:text-gray-700 py-4 px-1 border-b-2 font-bold text-sm">Quizzes</button>
+                    <button onclick="switchTab('leaderboard')" id="tab-leaderboard" class="border-transparent text-gray-500 hover:text-gray-700 py-4 px-1 border-b-2 font-bold text-sm">Leaderboard</button>
+                </nav>
+            </div>
+
+            <div id="section-materials" class="block space-y-4">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50 border-b border-gray-100">
+                            <tr>
+                                <th class="p-4 font-bold text-gray-500">Material</th>
+                                <th class="p-4 font-bold text-gray-500 text-center">Status</th>
+                                <th class="p-4 font-bold text-gray-500 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="materials-list" class="divide-y divide-gray-100">
+                            <tr><td colspan="3" class="p-8 text-center text-gray-500">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="section-quizzes" class="hidden space-y-4">
+                <div id="quizzes-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="col-span-full p-8 text-center text-gray-500">Loading...</div>
+                </div>
+            </div>
+
+            <div id="section-leaderboard" class="hidden space-y-4">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50 border-b border-gray-100">
+                            <tr>
+                                <th class="p-4 font-bold text-gray-500 text-center">Rank</th>
+                                <th class="p-4 font-bold text-gray-500">Student</th>
+                                <th class="p-4 font-bold text-gray-500 text-right">Average Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-list" class="divide-y divide-gray-100">
+                            <tr><td colspan="3" class="p-8 text-center text-gray-500">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        const studentId = localStorage.getItem('userId');
+        const courseId = new URLSearchParams(window.location.search).get('id');
+        
+        if (!studentId) window.location.href = '/';
+        if (!courseId) window.location.href = '/student-dashboard.html';
+
+        function switchTab(tab) {
+            ['materials', 'quizzes', 'leaderboard'].forEach(t => {
+                document.getElementById(`section-${t}`).classList.toggle('hidden', tab !== t);
+                document.getElementById(`tab-${t}`).className = tab === t 
+                    ? 'border-blue-500 text-blue-600 py-4 px-1 border-b-2 font-bold text-sm' 
+                    : 'border-transparent text-gray-500 hover:text-gray-700 py-4 px-1 border-b-2 font-bold text-sm';
+            });
+        }
+
+        // =====================================
+        // OPTIMIZED: ONE FETCH TO RULE THEM ALL
+        // =====================================
+        async function loadCourseEngine() {
+            try {
+                const res = await fetch(`/api/student/course-view/${courseId}/${studentId}`);
+                if (!res.ok) throw new Error('Failed to load');
+                const data = await res.json();
+
+                document.getElementById('course-title-header').textContent = data.course.title;
+
+                renderMaterials(data.materials);
+                renderQuizzes(data.quizzes);
+                renderLeaderboard(data.leaderboard);
+
+            } catch (err) { 
+                alert('Failed to load course environment.'); 
+                window.location.href = '/student-dashboard.html';
+            }
+        }
+
+        // --- MATERIALS ---
+        function renderMaterials(materials) {
+            const list = document.getElementById('materials-list');
+            list.innerHTML = '';
+            if (materials.length === 0) return list.innerHTML = `<tr><td colspan="3" class="p-8 text-center text-gray-500">Your teacher hasn't uploaded materials yet.</td></tr>`;
+
+            materials.forEach(mat => {
+                const statusHtml = mat.is_completed 
+                    ? `<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">Read ✓</span>` 
+                    : `<span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold">Unread</span>`;
+                
+                list.innerHTML += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="p-4 font-bold text-gray-800">${mat.title} <span class="ml-2 text-xs text-gray-400 uppercase">${mat.type}</span></td>
+                        <td class="p-4 text-center">${statusHtml}</td>
+                        <td class="p-4 text-right">
+                            <button onclick="openViewer(${mat.id}, '${mat.file_url}', '${mat.title}')" class="bg-blue-50 text-blue-600 px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-100 transition">View Online</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function openViewer(contentId, fileUrl, title) {
+            await fetch('/api/content/track', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ student_id: studentId, content_id: contentId })
+            });
+
+            document.getElementById('viewer-title').textContent = title;
+            document.getElementById('document-frame').src = fileUrl;
+            document.getElementById('viewer-modal').classList.remove('hidden');
+            document.getElementById('viewer-modal').classList.add('flex');
+            
+            // Fast background reload
+            loadCourseEngine();
+        }
+
+        function closeViewer() {
+            document.getElementById('viewer-modal').classList.add('hidden');
+            document.getElementById('viewer-modal').classList.remove('flex');
+            document.getElementById('document-frame').src = "";
+        }
+
+        // --- QUIZZES ---
+        function renderQuizzes(quizzes) {
+            const list = document.getElementById('quizzes-list');
+            list.innerHTML = '';
+            
+            if (quizzes.length === 0) return list.innerHTML = `<div class="col-span-full p-8 text-center text-gray-500 bg-white rounded-xl border border-dashed">No quizzes available.</div>`;
+
+            quizzes.forEach(quiz => {
+                const actionBtn = !quiz.is_completed 
+                    ? `<button onclick="startQuiz(${quiz.id})" class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700">Take Quiz</button>`
+                    : `<button disabled class="w-full bg-green-100 text-green-700 py-2 rounded-lg font-bold">Quiz Completed ✓</button>`;
+
+                list.innerHTML += `
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <h3 class="font-bold text-lg text-gray-800 mb-1">${quiz.title}</h3>
+                        <p class="text-sm text-gray-500 mb-4">${quiz.question_count} Questions</p>
+                        ${actionBtn}
+                    </div>
+                `;
+            });
+        }
+
+        let activeQuizData = null;
+
+        async function startQuiz(quizId) {
+            try {
+                const res = await fetch(`/api/quizzes/${quizId}`);
+                activeQuizData = await res.json();
+                
+                if (typeof activeQuizData.questions === 'string') activeQuizData.questions = JSON.parse(activeQuizData.questions);
+
+                document.getElementById('taking-quiz-title').textContent = activeQuizData.title;
+                document.getElementById('active-quiz-id').value = activeQuizData.id;
+
+                const qContainer = document.getElementById('quiz-questions-container');
+                qContainer.innerHTML = '';
+
+                activeQuizData.questions.forEach((q, index) => {
+                    const qId = `q_${index}`;
+                    qContainer.innerHTML += `
+                        <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                            <h3 class="font-bold text-gray-800 text-lg mb-4"><span class="text-blue-600 mr-2">${index + 1}.</span> ${q.question}</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                ${['A','B','C','D'].map(opt => `
+                                    <label class="flex items-center space-x-3 bg-white px-4 py-3 border rounded-lg hover:bg-blue-50 cursor-pointer">
+                                        <input type="checkbox" name="${qId}" value="${opt}" class="w-5 h-5 text-blue-600 border-gray-300 rounded">
+                                        <span class="font-medium text-gray-700">${opt}. ${q.options[opt]}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                document.getElementById('take-quiz-modal').classList.remove('hidden');
+                document.getElementById('take-quiz-modal').classList.add('flex');
+            } catch (err) { alert("Failed to load quiz."); }
+        }
+
+        function closeQuizModal() {
+            document.getElementById('take-quiz-modal').classList.add('hidden');
+            document.getElementById('take-quiz-modal').classList.remove('flex');
+            document.getElementById('submit-quiz-form').reset();
+        }
+
+        document.getElementById('submit-quiz-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!confirm("Submit your answers?")) return;
+
+            const btn = document.getElementById('submit-quiz-btn');
+            btn.textContent = 'Grading...'; btn.disabled = true;
+
+            let correctCount = 0;
+            activeQuizData.questions.forEach((q, index) => {
+                const userAnswers = Array.from(document.querySelectorAll(`input[name="q_${index}"]:checked`)).map(cb => cb.value).sort();
+                const correctAnswers = [...q.correct_answers].sort();
+                if (JSON.stringify(userAnswers) === JSON.stringify(correctAnswers)) correctCount++;
+            });
+
+            const finalScore = ((correctCount / activeQuizData.questions.length) * 100).toFixed(2);
+
+            try {
+                await fetch('/api/quizzes/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ student_id: studentId, quiz_id: activeQuizData.id, score: finalScore })
+                });
+                alert(`Quiz Complete! Score: ${finalScore}%`);
+                closeQuizModal();
+                loadCourseEngine(); // Refresh to lock the quiz button and update the leaderboard instantly!
+            } catch (err) { alert("Network Error."); }
+            finally { btn.textContent = 'Submit Answers'; btn.disabled = false; }
+        });
+
+        // --- LEADERBOARD ---
+        function renderLeaderboard(leaderboard) {
+            const list = document.getElementById('leaderboard-list');
+            list.innerHTML = '';
+            
+            if (leaderboard.length === 0) return list.innerHTML = `<tr><td colspan="3" class="p-8 text-center text-gray-500">No grades recorded yet.</td></tr>`;
+
+            leaderboard.forEach((student, index) => {
+                const rank = index + 1;
+                const isMe = student.name === localStorage.getItem('userName') ? 'bg-blue-50' : '';
+                let rankHtml = `<span class="text-gray-500 font-bold">#${rank}</span>`;
+                if(rank === 1) rankHtml = '🥇'; else if(rank===2) rankHtml = '🥈'; else if(rank===3) rankHtml = '🥉';
+
+                list.innerHTML += `
+                    <tr class="${isMe} hover:bg-gray-50">
+                        <td class="p-4 text-center text-xl">${rankHtml}</td>
+                        <td class="p-4 font-bold text-gray-800">${student.name} ${isMe ? '<span class="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full ml-2">YOU</span>' : ''}</td>
+                        <td class="p-4 text-right font-bold text-green-600">${student.avg_score}%</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', loadCourseEngine);
+
+    </script>
+</body>
+</html>

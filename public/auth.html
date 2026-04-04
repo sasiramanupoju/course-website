@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACE Engineering College - Portal Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-8">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-gray-800">ACE Engineering College</h1>
+            <p class="text-gray-500 mt-2" id="form-title">Sign in to your account</p>
+        </div>
+
+        <form id="login-form" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Email Address</label>
+                <input type="email" id="login-email" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your email" required>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" id="login-password" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition">Login</button>
+        </form>
+
+        <form id="signup-form" class="space-y-4 hidden">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Full Name</label>
+                <input type="text" id="signup-name" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Sasiram Anupoju" required>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Email Address</label>
+                <input type="email" id="signup-email" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your email" required>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Role</label>
+                <select id="signup-role" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    <option value="student">Student</option>
+                    <option value="teacher">Teacher</option>
+                </select>
+            </div>
+            
+            <div id="student-fields" class="space-y-4 block">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Roll Number</label>
+                    <input type="text" id="signup-roll" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., 20B81A0501" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Academic Year</label>
+                    <select id="signup-year" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" required>
+                        <option value="" disabled selected>Select Year</option>
+                        <option value="1">1st Year</option>
+                        <option value="2">2nd Year</option>
+                        <option value="3">3rd Year</option>
+                        <option value="4">4th Year</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Section</label>
+                    <select id="signup-section" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" required>
+                        <option value="" disabled selected>Select Section</option>
+                        <option value="A">Section A</option>
+                        <option value="B">Section B</option>
+                        <option value="C">Section C</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" id="signup-password" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="••••••••" required>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                <input type="password" id="signup-confirm-password" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="w-full bg-green-600 text-white font-semibold py-2 rounded-lg hover:bg-green-700 transition">Create Account</button>
+        </form>
+
+        <div class="mt-6 text-center">
+            <button id="toggle-auth" class="text-blue-600 hover:underline text-sm font-medium">Need an account? Sign up</button>
+        </div>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const toggleBtn = document.getElementById('toggle-auth');
+        const formTitle = document.getElementById('form-title');
+        
+        const roleSelect = document.getElementById('signup-role');
+        const studentFields = document.getElementById('student-fields');
+        const rollInput = document.getElementById('signup-roll');
+        const yearInput = document.getElementById('signup-year');
+        const sectionInput = document.getElementById('signup-section');
+
+        // Toggle between Login and Signup UI
+        toggleBtn.addEventListener('click', () => {
+            if (loginForm.classList.contains('hidden')) {
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+                toggleBtn.textContent = "Need an account? Sign up";
+                formTitle.textContent = "Sign in to your account";
+            } else {
+                loginForm.classList.add('hidden');
+                signupForm.classList.remove('hidden');
+                toggleBtn.textContent = "Already have an account? Login";
+                formTitle.textContent = "Create a new account";
+            }
+        });
+
+        // Hide/Show Student Fields based on Role
+        roleSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'student') {
+                studentFields.classList.remove('hidden');
+                rollInput.required = true;
+                yearInput.required = true;
+                sectionInput.required = true;
+            } else {
+                studentFields.classList.add('hidden');
+                rollInput.required = false;
+                yearInput.required = false;
+                sectionInput.required = false;
+                rollInput.value = '';
+                yearInput.value = '';
+                sectionInput.value = '';
+            }
+        });
+
+        // Handle Signup Submission
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+            
+            const password = document.getElementById('signup-password').value;
+            const confirmPassword = document.getElementById('signup-confirm-password').value;
+
+            if (password !== confirmPassword) {
+                alert("Passwords do not match! Please try again.");
+                return; 
+            }
+            
+            const userData = {
+                name: document.getElementById('signup-name').value,
+                email: document.getElementById('signup-email').value,
+                role: roleSelect.value,
+                password: password,
+                rollNumber: rollInput.value,
+                year: yearInput.value,
+                section: sectionInput.value
+            };
+
+            try {
+                const response = await fetch('/api/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Save user memory to browser so other pages know who is logged in!
+                    localStorage.setItem('userId', data.user.id);
+                    localStorage.setItem('userName', data.user.name);
+                    localStorage.setItem('userRole', data.user.role);
+
+                    alert('Account created successfully!');
+                    window.location.href = data.user.role === 'teacher' ? '/teacher-dashboard.html' : '/student-dashboard.html';
+                } else {
+                    let errorMessage = `Failed to create account.\n\nReason: ${data.error}`;
+                    if (data.details) errorMessage += `\n\nDatabase Log: ${data.details}`;
+                    alert(errorMessage);
+                }
+            } catch (error) {
+                console.error('Network Error:', error);
+                alert('Failed to connect to the server. Is your Node.js server running?');
+            }
+        });
+
+        // Handle Login Submission
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+            
+            const loginData = {
+                email: document.getElementById('login-email').value,
+                password: document.getElementById('login-password').value
+            };
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(loginData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Save user memory to browser so other pages know who is logged in!
+                    localStorage.setItem('userId', data.id);
+                    localStorage.setItem('userName', data.name);
+                    localStorage.setItem('userRole', data.role);
+
+                    window.location.href = data.role === 'teacher' ? '/teacher-dashboard.html' : '/student-dashboard.html';
+                } else {
+                    alert(`Login Failed: ${data.error}\n${data.details || ''}`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to connect to the server.');
+            }
+        });
+    </script>
+</body>
+</html>

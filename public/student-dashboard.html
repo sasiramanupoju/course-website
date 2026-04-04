@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal - ACE Engineering College</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+    <div id="profile-modal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50 backdrop-blur-sm p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-lg">
+            <div class="border-b pb-4 mb-6 flex justify-between items-center">
+                <h2 class="text-2xl font-bold text-gray-800">Edit Profile</h2>
+                <button onclick="closeProfileModal()" class="text-gray-400 hover:text-gray-800 font-bold text-xl">&times;</button>
+            </div>
+
+            <form id="profile-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input type="text" id="profile-name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                    <input type="email" id="profile-email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="text" id="profile-password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Roll Number</label>
+                        <input type="text" id="profile-roll" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Academic Year</label>
+                        <select id="profile-year" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" required>
+                            <option value="1">1st Year</option>
+                            <option value="2">2nd Year</option>
+                            <option value="3">3rd Year</option>
+                            <option value="4">4th Year</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Section</label>
+                        <select id="profile-section" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" required>
+                            <option value="A">Section A</option>
+                            <option value="B">Section B</option>
+                            <option value="C">Section C</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-8 pt-6 border-t flex justify-end gap-4">
+                    <button type="button" onclick="closeProfileModal()" class="px-6 py-2 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition">Cancel</button>
+                    <button type="submit" id="save-profile-btn" class="px-6 py-2 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transition">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <nav class="bg-white shadow-sm fixed w-full top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-blue-600">ACE Student Portal</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-700 font-bold hidden sm:block" id="student-name-display">Loading...</span>
+                    <button onclick="openProfileModal()" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-200 transition text-sm">Profile</button>
+                    <button onclick="logout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg font-semibold hover:bg-red-100 transition text-sm">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-24 pb-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-6 text-white shadow-lg">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <p class="text-4xl font-bold"><span id="metric-avg-score">0</span>% <span class="text-sm font-normal opacity-80 block sm:inline">Overall Quiz Average</span></p>
+                </div>
+                <div class="bg-white bg-opacity-20 rounded-xl px-6 py-3 border border-white border-opacity-30 text-right">
+                    <p class="text-sm font-medium opacity-90">Class Rank</p>
+                    <p class="text-2xl font-bold">#<span id="metric-rank">-</span> <span class="text-lg font-medium opacity-80">out of <span id="metric-total">-</span></span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">My Enrolled Courses</h2>
+            <div id="enrolled-courses-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="text-gray-500">Loading your courses...</div>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Course Catalog <span class="text-sm font-normal text-gray-500 ml-2">Available to Join</span></h2>
+            <div id="available-courses-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="text-gray-500">Loading available courses...</div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const studentId = localStorage.getItem('userId');
+        const studentRole = localStorage.getItem('userRole');
+        
+        if (!studentId || studentRole !== 'student') {
+            alert('Unauthorized Access.');
+            window.location.href = '/';
+        }
+        document.getElementById('student-name-display').textContent = localStorage.getItem('userName');
+        
+        function logout() { localStorage.clear(); window.location.href = '/'; }
+
+        // ==========================================
+        // PROFILE MANAGEMENT LOGIC
+        // ==========================================
+        async function openProfileModal() {
+            try {
+                const res = await fetch(`/api/users/${studentId}`);
+                if (!res.ok) throw new Error('Failed to load profile');
+                const user = await res.json();
+                
+                document.getElementById('profile-name').value = user.name;
+                document.getElementById('profile-email').value = user.email;
+                document.getElementById('profile-password').value = user.password;
+                document.getElementById('profile-roll').value = user.roll_number;
+                document.getElementById('profile-year').value = user.academic_year;
+                document.getElementById('profile-section').value = user.section;
+
+                document.getElementById('profile-modal').classList.remove('hidden');
+                document.getElementById('profile-modal').classList.add('flex');
+            } catch (err) {
+                alert('Failed to load profile details.');
+            }
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profile-modal').classList.add('hidden');
+            document.getElementById('profile-modal').classList.remove('flex');
+        }
+
+        document.getElementById('profile-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('save-profile-btn');
+            btn.textContent = 'Saving...'; 
+            btn.disabled = true;
+
+            const payload = {
+                name: document.getElementById('profile-name').value,
+                email: document.getElementById('profile-email').value,
+                password: document.getElementById('profile-password').value,
+                rollNumber: document.getElementById('profile-roll').value,
+                year: document.getElementById('profile-year').value,
+                section: document.getElementById('profile-section').value
+            };
+
+            try {
+                const res = await fetch(`/api/users/${studentId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert("Profile updated successfully!");
+                    localStorage.setItem('userName', data.user.name);
+                    document.getElementById('student-name-display').textContent = data.user.name;
+                    closeProfileModal();
+                } else {
+                    alert(`Update Failed: ${data.error}`);
+                }
+            } catch (err) {
+                alert("Network error while saving profile.");
+            } finally {
+                btn.textContent = 'Save Changes';
+                btn.disabled = false;
+            }
+        });
+
+        // ==========================================
+        // DASHBOARD LOGIC
+        // ==========================================
+        async function initDashboard() {
+            try {
+                const res = await fetch(`/api/dashboard/student/${studentId}`);
+                const data = await res.json();
+                
+                document.getElementById('metric-avg-score').textContent = data.avgScore;
+                document.getElementById('metric-rank').textContent = data.rank;
+                document.getElementById('metric-total').textContent = data.totalStudents; // Display dynamic cohort count
+
+                // Render Enrolled Courses
+                const enrolledContainer = document.getElementById('enrolled-courses-container');
+                enrolledContainer.innerHTML = '';
+                if (data.enrolledCourses.length === 0) {
+                    enrolledContainer.innerHTML = '<div class="col-span-full p-6 bg-gray-50 rounded-xl text-gray-500 text-center border border-dashed">You have not enrolled in any courses yet. Browse the catalog below!</div>';
+                } else {
+                    data.enrolledCourses.forEach(c => {
+                        const totalItems = parseInt(c.total_content) + parseInt(c.total_quizzes);
+                        const completedItems = parseInt(c.completed_content) + parseInt(c.completed_quizzes);
+                        const progressPercent = totalItems === 0 ? 0 : Math.round((completedItems / totalItems) * 100);
+                        
+                        enrolledContainer.innerHTML += `
+                            <div class="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition flex flex-col h-full">
+                                <h3 class="font-bold text-lg text-gray-800 mb-1">${c.title}</h3>
+                                <p class="text-sm text-gray-500 mb-4">Prof. ${c.teacher_name}</p>
+                                
+                                <div class="mb-6 flex-1">
+                                    <div class="flex justify-between text-xs font-bold text-gray-600 mb-1">
+                                        <span>Course Progress</span>
+                                        <span>${progressPercent}%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-100 rounded-full h-2">
+                                        <div class="bg-green-500 h-2 rounded-full transition-all duration-500" style="width: ${progressPercent}%"></div>
+                                    </div>
+                                </div>
+
+                                <div class="flex gap-2">
+                                    <button onclick="window.location.href='/student-view-course.html?id=${c.id}'" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-bold text-sm hover:bg-blue-700 transition">Enter Course</button>
+                                    <button onclick="unenrollCourse(${c.id})" class="bg-red-50 text-red-600 px-3 py-2 rounded-lg font-bold text-sm hover:bg-red-100 transition" title="Unenroll">Leave</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+
+                // Render Available Courses (Catalog)
+                const catalogContainer = document.getElementById('available-courses-container');
+                catalogContainer.innerHTML = '';
+                if (data.availableCourses.length === 0) {
+                    catalogContainer.innerHTML = '<div class="col-span-full p-6 text-gray-500 text-center">No new courses available to join right now.</div>';
+                } else {
+                    data.availableCourses.forEach(c => {
+                        catalogContainer.innerHTML += `
+                            <div class="bg-gray-50 border border-gray-200 rounded-xl p-5 flex flex-col h-full">
+                                <h3 class="font-bold text-lg text-gray-800 mb-1">${c.title}</h3>
+                                <p class="text-sm text-gray-500 mb-3">Prof. ${c.teacher_name}</p>
+                                <p class="text-sm text-gray-600 mb-4 flex-1 line-clamp-3">${c.description || 'No description provided.'}</p>
+                                <button onclick="enrollCourse(${c.id})" class="w-full bg-gray-800 text-white py-2 rounded-lg font-bold text-sm hover:bg-gray-900 transition shadow-sm">+ Enroll Now</button>
+                            </div>
+                        `;
+                    });
+                }
+
+            } catch (err) {
+                alert("Error loading dashboard data.");
+            }
+        }
+
+        async function enrollCourse(courseId) {
+            try {
+                await fetch('/api/student/enroll', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ student_id: studentId, course_id: courseId })
+                });
+                initDashboard(); 
+            } catch(e) { alert("Failed to enroll."); }
+        }
+
+        async function unenrollCourse(courseId) {
+            if(!confirm("Are you sure you want to leave this course? Your quiz grades will be saved, but you will lose access to the materials.")) return;
+            try {
+                await fetch('/api/student/unenroll', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ student_id: studentId, course_id: courseId })
+                });
+                initDashboard(); 
+            } catch(e) { alert("Failed to unenroll."); }
+        }
+
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>
