@@ -17,5 +17,13 @@
     "express": "^5.2.1",
     "multer": "^2.1.1",
     "pg": "^8.20.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sasiramanupoju/course-website.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sasiramanupoju/course-website/issues"
+  },
+  "homepage": "https://github.com/sasiramanupoju/course-website#readme"
 }
