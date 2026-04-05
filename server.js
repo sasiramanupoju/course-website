@@ -1,6 +1,17 @@
 const express = require('express');
 const cors = require('cors');
 const pool = require('./db');
+
+// TEST DATABASE CONNECTION ON BOOT
+pool.query('SELECT NOW()', (err, res) => {
+  if (err) {
+    console.error('CRITICAL: Failed to connect to the database on startup!');
+    console.error('Detailed Error:', err.message);
+  } else {
+    console.log('SUCCESS: Connected to Neon Database at', res.rows[0].now);
+  }
+});
+
 const path = require('path'); 
 const multer = require('multer');
 const fs = require('fs');
