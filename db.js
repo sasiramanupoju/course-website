@@ -1,31 +1,43 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  },
-  // Vercel serverless functions can hang if a connection drops. 
-  // This tells the pool to timeout and throw an error after 5 seconds if it can't connect.
-  connectionTimeoutMillis: 5000, 
-  idleTimeoutMillis: 30000
-});
+// Vercel sometimes prefers explicit configurations over a single connection string
+// This manually parses your DATABASE_URL if it exists
+let dbConfig = {};
 
-// This will log database connection errors directly to your Vercel logs
-// pool.on('error', (err, client) => {
-//   console.error('Unexpected error on idle client', err);
-// });
+if (process.env.DATABASE_URL) {
+  dbConfig = {
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false
+    },
+    connectionTimeoutMillis: 5000 // Fails fast instead of hanging
+  };
+} else {
+  // Fallback for localhost if you are still using individual variables there
+  dbConfig = {
+    user: process.env.PGUSER,
+    host: process.env.PGHOST,
+    database: process.env.PGDATABASE,
+    password: process.env.PGPASSWORD,
+    port: process.env.PGPORT || 5432,
+    ssl: {
+      rejectUnauthorized: false
+    }
+  };
+}
 
-// module.exports = pool;
+const pool = new Pool(dbConfig);
 
-// Test the connection on startup
+// Test the connection
 pool.connect((err, client, release) => {
   if (err) {
-    return console.error('Error acquiring client for Neon DB', err.stack);
+    console.error('VERCEL DIAGNOSTIC - Connection Error:', err.message);
+    console.error('VERCEL DIAGNOSTIC - Host Attempted:', dbConfig.host || 'Parsed from URL');
+  } else {
+    console.log('VERCEL DIAGNOSTIC - Successfully connected to database!');
+    release();
   }
-  console.log('Successfully connected to Neon PostgreSQL Database');
-  release();
 });
 
 module.exports = pool;
