@@ -1,14 +1,23 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
-// Neon requires SSL for all connections
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
-    require: true,
-    rejectUnauthorized: false // Ensures compatibility with cloud certs on macOS
-  }
+    rejectUnauthorized: false
+  },
+  // Vercel serverless functions can hang if a connection drops. 
+  // This tells the pool to timeout and throw an error after 5 seconds if it can't connect.
+  connectionTimeoutMillis: 5000, 
+  idleTimeoutMillis: 30000
 });
+
+// This will log database connection errors directly to your Vercel logs
+// pool.on('error', (err, client) => {
+//   console.error('Unexpected error on idle client', err);
+// });
+
+// module.exports = pool;
 
 // Test the connection on startup
 pool.connect((err, client, release) => {
