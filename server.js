@@ -61,7 +61,10 @@ app.post('/api/login', async (req, res) => {
     const user = await pool.query('SELECT * FROM users WHERE email = $1 AND password = $2', [req.body.email.trim(), req.body.password]);
     if (user.rows.length === 0) return res.status(401).json({ error: 'Invalid Credentials' });
     res.json(user.rows[0]);
-  } catch (err) { res.status(500).json({ error: 'Database Error' }); }
+  } catch (err) { 
+    console.error("DB Error Details:", err); // ADD THIS LINE
+    res.status(500).json({ error: 'Database Error', details: err.message }); // Send it to the frontend for debugging
+  }
 });
 
 // ==========================================
