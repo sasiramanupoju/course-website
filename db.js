@@ -1,41 +1,22 @@
 const { Pool } = require('pg');
-require('dotenv').config();
 
-// Vercel sometimes prefers explicit configurations over a single connection string
-// This manually parses your DATABASE_URL if it exists
-let dbConfig = {};
+// Paste your NeonDB connection string directly here
+const myDatabaseUrl = 'postgresql://neondb_owner:npg_9ify1KvpCGFA@ep-divine-bonus-anjev2p4-pooler.c-6.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
 
-if (process.env.DATABASE_URL) {
-  dbConfig = {
-    connectionString: process.env.DATABASE_URL,
+const pool = new Pool({
+    connectionString: myDatabaseUrl,
     ssl: {
       rejectUnauthorized: false
     },
     connectionTimeoutMillis: 5000 // Fails fast instead of hanging
-  };
-} else {
-  // Fallback for localhost if you are still using individual variables there
-  dbConfig = {
-    user: process.env.PGUSER,
-    host: process.env.PGHOST,
-    database: process.env.PGDATABASE,
-    password: process.env.PGPASSWORD,
-    port: process.env.PGPORT || 5432,
-    ssl: {
-      rejectUnauthorized: false
-    }
-  };
-}
-
-const pool = new Pool(dbConfig);
+});
 
 // Test the connection
 pool.connect((err, client, release) => {
   if (err) {
-    console.error('VERCEL DIAGNOSTIC - Connection Error:', err.message);
-    console.error('VERCEL DIAGNOSTIC - Host Attempted:', dbConfig.host || 'Parsed from URL');
+    console.error('Connection Error:', err.message);
   } else {
-    console.log('VERCEL DIAGNOSTIC - Successfully connected to database!');
+    console.log('Successfully connected to database!');
     release();
   }
 });
