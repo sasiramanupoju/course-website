@@ -1,17 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const pool = require('./db');
-
-// TEST DATABASE CONNECTION ON BOOT
-pool.query('SELECT NOW()', (err, res) => {
-  if (err) {
-    console.error('CRITICAL: Failed to connect to the database on startup!');
-    console.error('Detailed Error:', err.message);
-  } else {
-    console.log('SUCCESS: Connected to Neon Database at', res.rows[0].now);
-  }
-});
-
 const path = require('path'); 
 const multer = require('multer');
 const fs = require('fs');
@@ -76,7 +65,7 @@ app.post('/api/login', async (req, res) => {
 });
 
 // ==========================================
-// TEACHER ROUTES
+// TEACHER DASHBOARD
 // ==========================================
 app.get('/api/dashboard/teacher', async (req, res) => {
     try {
@@ -126,6 +115,9 @@ app.post('/api/attendance/update', async (req, res) => {
     } catch (err) { res.status(500).json({ error: 'Server Error' }); }
 });
 
+// ==========================================
+// COURSE MANAGEMENT (TEACHER)
+// ==========================================
 app.get('/api/courses', async (req, res) => {
   try {
     const result = await pool.query(`SELECT c.id, c.title, c.description, u.name AS teacher_name FROM courses c JOIN users u ON c.teacher_id = u.id ORDER BY c.id DESC;`);
@@ -162,6 +154,23 @@ app.get('/api/courses/details/:id', async (req, res) => {
     } catch (err) { res.status(500).json({ error: 'Server Error' }); }
 });
 
+// NEW: Get enrolled students for a specific course
+app.get('/api/courses/:course_id/students', async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT u.id as student_id, u.name, u.roll_number, u.email, e.enrolled_at 
+            FROM enrollments e 
+            JOIN users u ON e.student_id = u.id 
+            WHERE e.course_id = $1 
+            ORDER BY u.name ASC;
+        `, [req.params.course_id]);
+        res.json(result.rows);
+    } catch (err) { res.status(500).json({ error: 'Server Error' }); }
+});
+
+// ==========================================
+// CONTENT & MATERIALS
+// ==========================================
 app.post('/api/content/upload', upload.single('file'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: 'No file' });
@@ -184,6 +193,9 @@ app.delete('/api/content/:id', async (req, res) => {
     } catch (err) { res.status(500).json({ error: 'Server Error' }); }
 });
 
+// ==========================================
+// QUIZZES & ANALYTICS
+// ==========================================
 app.post('/api/quizzes/create', async (req, res) => {
     try {
         const result = await pool.query('INSERT INTO quizzes (course_id, title, questions) VALUES ($1, $2, $3) RETURNING *', [req.body.course_id, req.body.title, JSON.stringify(req.body.questions)]);
@@ -231,7 +243,6 @@ app.get('/api/quizzes-dashboard/:course_id', async (req, res) => {
 // ==========================================
 // USER PROFILE MANAGEMENT 
 // ==========================================
-
 app.get('/api/users/:id', async (req, res) => {
     try {
         const result = await pool.query('SELECT id, name, email, role, roll_number, academic_year, section, password FROM users WHERE id = $1', [req.params.id]);
@@ -256,7 +267,6 @@ app.put('/api/users/:id', async (req, res) => {
     }
 });
 
-
 // ==========================================
 // STUDENT ROUTES (ENROLLMENT & DASHBOARD)
 // ==========================================
@@ -279,56 +289,42 @@ app.get('/api/dashboard/student/:id', async (req, res) => {
     if (!studentId || studentId === 'undefined') return res.status(400).json({ error: 'Invalid ID' });
 
     try {
-        // FIXED: Calculate Rank strictly against students in the SAME Year & Section
         const rankQuery = `
-            WITH MyCohort AS (
-                SELECT academic_year, section FROM users WHERE id = $1
-            ),
+            WITH MyCohort AS (SELECT academic_year, section FROM users WHERE id = $1),
             StudentAverages AS (
                 SELECT u.id as student_id, COALESCE(AVG(qr.score), 0) as avg_score
-                FROM users u 
-                JOIN MyCohort mc ON u.academic_year = mc.academic_year AND u.section = mc.section
-                LEFT JOIN quiz_results qr ON u.id = qr.student_id
-                WHERE u.role = 'student' 
-                GROUP BY u.id
+                FROM users u JOIN MyCohort mc ON u.academic_year = mc.academic_year AND u.section = mc.section
+                LEFT JOIN quiz_results qr ON u.id = qr.student_id WHERE u.role = 'student' GROUP BY u.id
             )
-            SELECT student_id, avg_score, RANK() OVER (ORDER BY avg_score DESC) as rank
-            FROM StudentAverages;
+            SELECT student_id, avg_score, RANK() OVER (ORDER BY avg_score DESC) as rank FROM StudentAverages;
         `;
-
         const availableQuery = `
-            SELECT c.id, c.title, c.description, u.name as teacher_name 
-            FROM courses c JOIN users u ON c.teacher_id = u.id 
-            WHERE c.id NOT IN (SELECT course_id FROM enrollments WHERE student_id = $1)
-            ORDER BY c.created_at DESC;
+            SELECT c.id, c.title, c.description, u.name as teacher_name FROM courses c JOIN users u ON c.teacher_id = u.id 
+            WHERE c.id NOT IN (SELECT course_id FROM enrollments WHERE student_id = $1) ORDER BY c.created_at DESC;
         `;
-
         const enrolledQuery = `
             SELECT c.id, c.title, c.description, u.name as teacher_name,
                 (SELECT COUNT(*) FROM content WHERE course_id = c.id) as total_content,
                 (SELECT COUNT(*) FROM content_tracking ct JOIN content co ON ct.content_id = co.id WHERE co.course_id = c.id AND ct.student_id = $1) as completed_content,
                 (SELECT COUNT(*) FROM quizzes WHERE course_id = c.id) as total_quizzes,
                 (SELECT COUNT(*) FROM quiz_results qr JOIN quizzes q ON qr.quiz_id = q.id WHERE q.course_id = c.id AND qr.student_id = $1) as completed_quizzes
-            FROM courses c
-            JOIN enrollments e ON c.id = e.course_id
-            JOIN users u ON c.teacher_id = u.id
-            WHERE e.student_id = $1
-            ORDER BY e.enrolled_at DESC;
+            FROM courses c JOIN enrollments e ON c.id = e.course_id JOIN users u ON c.teacher_id = u.id
+            WHERE e.student_id = $1 ORDER BY e.enrolled_at DESC;
         `;
         
         const [rankRes, availableRes, enrolledRes, absencesRes] = await Promise.all([
-            pool.query(rankQuery, [studentId]), // Pass studentId to the CTE query!
+            pool.query(rankQuery, [studentId]),
             pool.query(availableQuery, [studentId]),
             pool.query(enrolledQuery, [studentId]),
             pool.query(`SELECT date, reason_for_absence, status FROM attendance WHERE student_id = $1 AND reason_for_absence IS NOT NULL ORDER BY date DESC LIMIT 5;`, [studentId])
         ]);
 
         const myData = rankRes.rows.find(r => r.student_id == studentId) || { avg_score: 0, rank: 'N/A' };
-        const totalStudentsInCohort = rankRes.rows.length || 1; // Now represents Class size, not College size!
+        const totalStudentsInCohort = rankRes.rows.length || 1;
 
         res.json({
             rank: myData.rank,
-            totalStudents: totalStudentsInCohort, // Sending back cohort size
+            totalStudents: totalStudentsInCohort,
             avgScore: parseFloat(myData.avg_score).toFixed(1),
             availableCourses: availableRes.rows,
             enrolledCourses: enrolledRes.rows,
@@ -342,31 +338,17 @@ app.get('/api/student/course-view/:course_id/:student_id', async (req, res) => {
     try {
         const [courseRes, materialsRes, quizzesRes, leaderboardRes] = await Promise.all([
             pool.query('SELECT * FROM courses WHERE id = $1', [course_id]),
-            pool.query(`
-                SELECT c.*, CASE WHEN ct.id IS NOT NULL THEN true ELSE false END as is_completed
-                FROM content c LEFT JOIN content_tracking ct ON c.id = ct.content_id AND ct.student_id = $1
-                WHERE c.course_id = $2 ORDER BY c.uploaded_at DESC
-            `, [student_id, course_id]),
-            pool.query(`
-                SELECT q.id, q.title, q.created_at, q.questions, 
-                       CASE WHEN qr.id IS NOT NULL THEN true ELSE false END as is_completed
-                FROM quizzes q LEFT JOIN quiz_results qr ON q.id = qr.quiz_id AND qr.student_id = $1
-                WHERE q.course_id = $2 ORDER BY q.created_at DESC
-            `, [student_id, course_id]),
-            pool.query(`
-                SELECT u.name, u.roll_number, COALESCE(ROUND(AVG(qr.score), 2), 0) as avg_score, COUNT(qr.id) as quizzes_taken 
-                FROM users u JOIN quiz_results qr ON u.id = qr.student_id JOIN quizzes q ON qr.quiz_id = q.id 
-                WHERE q.course_id = $1 GROUP BY u.id, u.name, u.roll_number ORDER BY avg_score DESC;
-            `, [course_id])
+            pool.query(`SELECT c.*, CASE WHEN ct.id IS NOT NULL THEN true ELSE false END as is_completed FROM content c LEFT JOIN content_tracking ct ON c.id = ct.content_id AND ct.student_id = $1 WHERE c.course_id = $2 ORDER BY c.uploaded_at DESC`, [student_id, course_id]),
+            pool.query(`SELECT q.id, q.title, q.created_at, q.questions, CASE WHEN qr.id IS NOT NULL THEN true ELSE false END as is_completed FROM quizzes q LEFT JOIN quiz_results qr ON q.id = qr.quiz_id AND qr.student_id = $1 WHERE q.course_id = $2 ORDER BY q.created_at DESC`, [student_id, course_id]),
+            pool.query(`SELECT u.name, u.roll_number, COALESCE(ROUND(AVG(qr.score), 2), 0) as avg_score, COUNT(qr.id) as quizzes_taken FROM users u JOIN quiz_results qr ON u.id = qr.student_id JOIN quizzes q ON qr.quiz_id = q.id WHERE q.course_id = $1 GROUP BY u.id, u.name, u.roll_number ORDER BY avg_score DESC;`, [course_id])
         ]);
 
         if (courseRes.rows.length === 0) return res.status(404).json({ error: 'Course not found' });
 
         const safeQuizzes = quizzesRes.rows.map(q => {
             let qCount = 0;
-            if (typeof q.questions === 'string') {
-                try { qCount = JSON.parse(q.questions).length; } catch(e) {}
-            } else if (Array.isArray(q.questions)) { qCount = q.questions.length; }
+            if (typeof q.questions === 'string') { try { qCount = JSON.parse(q.questions).length; } catch(e) {} } 
+            else if (Array.isArray(q.questions)) { qCount = q.questions.length; }
             return { ...q, question_count: qCount };
         });
 

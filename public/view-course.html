@@ -13,19 +13,12 @@
             <h2 id="modal-title" class="text-xl font-bold text-gray-800 mb-4">Create New Quiz</h2>
             <form id="quiz-form" class="space-y-4">
                 <input type="hidden" id="edit-quiz-id">
-                
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Quiz Title</label>
                     <input type="text" id="quiz-title" placeholder="e.g., Midterm Assessment" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500" required>
                 </div>
-                
-                <div id="questions-container" class="space-y-6 mt-4">
-                    </div>
-
-                <button type="button" onclick="addQuestionBlock()" class="w-full py-3 border-2 border-dashed border-gray-300 text-gray-500 rounded-lg font-medium hover:bg-gray-50 hover:text-blue-600 transition">
-                    + Add Another Question
-                </button>
-
+                <div id="questions-container" class="space-y-6 mt-4"></div>
+                <button type="button" onclick="addQuestionBlock()" class="w-full py-3 border-2 border-dashed border-gray-300 text-gray-500 rounded-lg font-medium hover:bg-gray-50 hover:text-blue-600 transition">+ Add Another Question</button>
                 <div class="mt-6 flex justify-end gap-3 pt-4 border-t">
                     <button type="button" onclick="closeQuizModal()" class="px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200">Cancel</button>
                     <button type="submit" id="save-quiz-btn" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 shadow-sm">Save Quiz</button>
@@ -52,8 +45,7 @@
                             <th class="p-3 font-medium text-right">Submitted At</th>
                         </tr>
                     </thead>
-                    <tbody id="results-table-body" class="divide-y divide-gray-100">
-                        </tbody>
+                    <tbody id="results-table-body" class="divide-y divide-gray-100"></tbody>
                 </table>
             </div>
         </div>
@@ -90,8 +82,9 @@
 
             <div class="border-b border-gray-200">
                 <nav class="-mb-px flex space-x-8">
-                    <button onclick="switchTab('materials')" id="tab-materials" class="border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Course Materials</button>
-                    <button onclick="switchTab('quizzes')" id="tab-quizzes" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Quizzes & Assignments</button>
+                    <button onclick="switchTab('materials')" id="tab-materials" class="border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition">Course Materials</button>
+                    <button onclick="switchTab('quizzes')" id="tab-quizzes" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition">Quizzes & Assignments</button>
+                    <button onclick="switchTab('students')" id="tab-students" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition">Enrolled Students</button>
                 </nav>
             </div>
 
@@ -127,6 +120,28 @@
                 </div>
             </div>
 
+            <div id="section-students" class="hidden space-y-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800">Enrolled Students</h2>
+                    <span id="student-count-badge" class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">0 Students</span>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-gray-50 border-b border-gray-100">
+                            <tr>
+                                <th class="p-4 text-sm font-medium text-gray-500">Student Name</th>
+                                <th class="p-4 text-sm font-medium text-gray-500">Roll Number</th>
+                                <th class="p-4 text-sm font-medium text-gray-500">Email Address</th>
+                                <th class="p-4 text-sm font-medium text-gray-500 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="students-list" class="divide-y divide-gray-100">
+                            <tr><td colspan="4" class="p-8 text-center text-gray-500">Loading students...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
     </main>
 
@@ -136,21 +151,17 @@
         if (!courseId) window.location.href = '/manage-courses.html';
         function logout() { localStorage.clear(); window.location.href = '/'; }
 
-        // Globals to track state
         let currentQuizzes = []; 
         let questionCounter = 0;
 
+        // Dynamic Tab Switcher
         function switchTab(tab) {
-            document.getElementById('section-materials').classList.toggle('hidden', tab !== 'materials');
-            document.getElementById('section-quizzes').classList.toggle('hidden', tab !== 'quizzes');
-            
-            document.getElementById('tab-materials').className = tab === 'materials' 
-                ? 'border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm' 
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm';
-            
-            document.getElementById('tab-quizzes').className = tab === 'quizzes' 
-                ? 'border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm' 
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm';
+            ['materials', 'quizzes', 'students'].forEach(t => {
+                document.getElementById(`section-${t}`).classList.toggle('hidden', tab !== t);
+                document.getElementById(`tab-${t}`).className = tab === t 
+                    ? 'border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition' 
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition';
+            });
         }
 
         async function loadCourseData() {
@@ -159,11 +170,68 @@
                 const course = await courseRes.json();
                 document.getElementById('display-course-title').textContent = course.title;
                 document.getElementById('display-course-desc').textContent = course.description || '';
+                
                 loadMaterials();
                 loadQuizzes();
+                loadStudents(); // New call
             } catch (err) { alert('Error loading course.'); }
         }
 
+        // ==========================================
+        // ENROLLED STUDENTS LOGIC (NEW)
+        // ==========================================
+        async function loadStudents() {
+            const list = document.getElementById('students-list');
+            const badge = document.getElementById('student-count-badge');
+            
+            try {
+                const res = await fetch(`/api/courses/${courseId}/students`);
+                const students = await res.json();
+                
+                badge.textContent = `${students.length} Student${students.length !== 1 ? 's' : ''}`;
+                list.innerHTML = '';
+
+                if (students.length === 0) {
+                    list.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-500">No students are currently enrolled in this course.</td></tr>`;
+                    return;
+                }
+
+                students.forEach(student => {
+                    list.innerHTML += `
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="p-4 font-bold text-gray-800">${student.name}</td>
+                            <td class="p-4 text-gray-600 font-mono text-sm">${student.roll_number || 'N/A'}</td>
+                            <td class="p-4 text-gray-600 text-sm">${student.email}</td>
+                            <td class="p-4 text-right">
+                                <button onclick="removeStudent(${student.student_id}, '${student.name}')" class="text-red-600 hover:text-red-800 text-sm font-bold bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition">Remove</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch(e) {
+                list.innerHTML = `<tr><td colspan="4" class="p-4 text-red-500 text-center">Error loading students.</td></tr>`;
+            }
+        }
+
+        async function removeStudent(studentId, studentName) {
+            if (!confirm(`Are you sure you want to completely remove ${studentName} from this course?`)) return;
+            
+            try {
+                // Safely reuse the unenroll route
+                const res = await fetch('/api/student/unenroll', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ student_id: studentId, course_id: courseId })
+                });
+                if (res.ok) {
+                    loadStudents(); // Refresh visually
+                } else { alert("Failed to remove student."); }
+            } catch (e) { alert("Network error while removing student."); }
+        }
+
+        // ==========================================
+        // MATERIALS LOGIC
+        // ==========================================
         async function loadMaterials() {
             const list = document.getElementById('materials-list');
             try {
@@ -193,9 +261,8 @@
         }
 
         // ==========================================
-        // QUIZ DYNAMIC BUILDER & CRUD
+        // QUIZ LOGIC
         // ==========================================
-        
         async function loadQuizzes() {
             const list = document.getElementById('quizzes-list');
             try {
@@ -231,13 +298,11 @@
             loadQuizzes();
         }
 
-        // Generate a blank Question Block
         function addQuestionBlock(existingData = null) {
             questionCounter++;
             const id = questionCounter;
             const container = document.getElementById('questions-container');
 
-            // Set default values if editing, else empty strings
             const qText = existingData ? existingData.question : '';
             const oA = existingData ? existingData.options.A : '';
             const oB = existingData ? existingData.options.B : '';
@@ -273,23 +338,20 @@
             container.appendChild(block);
         }
 
-        // Open Modal for Create (id=null) or Edit (id=existing)
         function openQuizModal(quizId = null) {
-            document.getElementById('questions-container').innerHTML = ''; // Clear previous form
+            document.getElementById('questions-container').innerHTML = ''; 
             
             if (quizId) {
-                // EDIT MODE
                 const quiz = currentQuizzes.find(q => q.id === quizId);
                 document.getElementById('modal-title').textContent = 'Edit Quiz';
                 document.getElementById('edit-quiz-id').value = quizId;
                 document.getElementById('quiz-title').value = quiz.title;
                 quiz.questions.forEach(qData => addQuestionBlock(qData));
             } else {
-                // CREATE MODE
                 document.getElementById('modal-title').textContent = 'Create New Quiz';
                 document.getElementById('edit-quiz-id').value = '';
                 document.getElementById('quiz-title').value = '';
-                addQuestionBlock(); // Start with 1 blank question
+                addQuestionBlock(); 
             }
 
             document.getElementById('quiz-modal').classList.remove('hidden');
@@ -301,7 +363,6 @@
             document.getElementById('quiz-modal').classList.remove('flex');
         }
 
-        // Save Logic (Handles both Create and Edit)
         document.getElementById('quiz-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const blocks = document.querySelectorAll('.question-block');
@@ -310,7 +371,6 @@
             const questions = [];
             let isValid = true;
 
-            // Loop through dynamic blocks and extract data
             blocks.forEach(block => {
                 const qText = block.querySelector('.q-text').value;
                 const optA = block.querySelector('.q-optA').value;
@@ -344,12 +404,10 @@
             };
 
             try {
-                // If we have an ID, do a PUT (Edit). Otherwise, do a POST (Create).
                 const url = quizId ? `/api/quizzes/${quizId}` : `/api/quizzes/create`;
                 const method = quizId ? 'PUT' : 'POST';
 
                 const res = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                
                 if (res.ok) {
                     closeQuizModal();
                     loadQuizzes();
@@ -358,9 +416,6 @@
             finally { btn.textContent = 'Save Quiz'; btn.disabled = false; }
         });
 
-        // ==========================================
-        // QUIZ RESULTS VIEW
-        // ==========================================
         async function viewResults(quizId) {
             const tbody = document.getElementById('results-table-body');
             tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-gray-500">Loading results...</td></tr>';
@@ -388,9 +443,7 @@
                         </tr>
                     `;
                 });
-            } catch(e) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-red-500">Failed to load results.</td></tr>';
-            }
+            } catch(e) { tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-red-500">Failed to load results.</td></tr>'; }
         }
 
         function closeResultsModal() {
