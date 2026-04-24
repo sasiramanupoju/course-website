@@ -25,5 +25,6 @@
   "bugs": {
     "url": "https://github.com/sasiramanupoju/course-website/issues"
   },
-  "homepage": "https://github.com/sasiramanupoju/course-website#readme"
+  "homepage": "https://github.com/sasiramanupoju/course-website#readme",
+  "devDependencies": {}
 }
