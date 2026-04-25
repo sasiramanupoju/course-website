@@ -8,9 +8,9 @@ let dbConfig = {};
 if (process.env.DATABASE_URL) {
   dbConfig = {
     connectionString: process.env.DATABASE_URL,
-    ssl: {
-      // rejectUnauthorized: false
-    },
+    // ssl: {
+    //   rejectUnauthorized: false
+    // },
     connectionTimeoutMillis: 5000 // Fails fast instead of hanging
   };
 } else {
