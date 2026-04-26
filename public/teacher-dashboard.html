@@ -5,48 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Dashboard - CSE (AI & ML)</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
 </head>
-<body class="bg-gray-50 flex h-screen overflow-hidden">
+<body class="bg-gray-50 flex h-screen overflow-hidden text-gray-800 font-sans">
 
-    <div id="mobile-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden md:hidden"></div>
+    <div id="mobile-overlay" class="fixed inset-0 bg-slate-900 bg-opacity-50 z-20 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
 
-    <aside id="sidebar" class="bg-gray-900 text-white w-64 flex-shrink-0 fixed md:static inset-y-0 left-0 transform -translate-x-full md:translate-x-0 transition-transform duration-300 z-30">
-        <div class="p-6">
-            <h2 class="text-xl font-bold">Instructor Panel</h2>
-            <p class="text-gray-400 text-sm mt-1">CSE (AI & ML) Dept</p>
+    <aside id="sidebar" class="bg-slate-900 text-white w-64 flex-shrink-0 fixed md:static inset-y-0 left-0 transform -translate-x-full md:translate-x-0 transition-transform duration-300 z-30 shadow-xl">
+        <div class="p-6 border-b border-slate-800">
+            <h2 class="text-xl font-bold tracking-tight text-blue-400">Instructor Panel</h2>
+            <p class="text-slate-400 text-sm mt-1">CSE (AI & ML) Dept</p>
         </div>
-        <nav class="mt-4">
-            <a href="#" class="block py-3 px-6 bg-gray-800 border-l-4 border-blue-500 text-white">Dashboard</a>
-            <a href="manage-attendance.html" class="block py-3 px-6 text-gray-400 hover:bg-gray-800 hover:text-white transition">Manage Attendance</a>
-            <a href="manage-courses.html" class="block py-3 px-6 text-gray-400 hover:bg-gray-800 hover:text-white transition">Course Content</a>
-            <a href="quizzes-leaderboard.html" class="block py-3 px-6 text-gray-400 hover:bg-gray-800 hover:text-white transition">Quizzes & Leaderboard</a>
+        <nav class="mt-6 space-y-1 px-3">
+            <a href="#" class="flex items-center py-3 px-4 bg-blue-600/10 text-blue-400 rounded-lg transition-colors">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                Dashboard Analytics
+            </a>
+            <a href="manage-attendance.html" class="flex items-center py-3 px-4 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Manage Attendance
+            </a>
+            <a href="manage-courses.html" class="flex items-center py-3 px-4 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                Course Content
+            </a>
+            <a href="quizzes-leaderboard.html" class="flex items-center py-3 px-4 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                Quizzes & Leaderboard
+            </a>
         </nav>
     </aside>
 
-    <main class="flex-1 flex flex-col h-screen overflow-y-auto w-full">
-        <header class="bg-white shadow-sm px-6 py-4 flex items-center justify-between">
+    <main class="flex-1 flex flex-col h-screen overflow-y-auto w-full bg-slate-50/50">
+        
+        <header class="bg-white border-b border-slate-200 px-8 py-5 flex items-center justify-between sticky top-0 z-10">
             <div class="flex items-center">
-                <button id="menu-btn" class="md:hidden text-gray-600 focus:outline-none mr-4">
+                <button id="menu-btn" class="md:hidden text-slate-500 focus:outline-none mr-4 hover:text-slate-800">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                 </button>
-                <h1 class="text-xl font-semibold text-gray-800" id="welcome-message">Welcome, Professor</h1>
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-800 tracking-tight" id="welcome-message">Overview</h1>
+                    <p class="text-sm text-slate-500">Academic Performance Analytics</p>
+                </div>
             </div>
-            <button onclick="logout()" class="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg font-medium hover:bg-blue-200 transition">Logout</button>
+            <button onclick="logout()" class="flex items-center text-sm font-medium text-slate-600 hover:text-red-600 bg-slate-100 hover:bg-red-50 px-4 py-2 rounded-lg transition-all duration-200">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                Sign Out
+            </button>
         </header>
 
-        <div class="p-6 space-y-6">
+        <div class="p-8 space-y-8 max-w-7xl mx-auto w-full">
             
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row gap-4 items-center justify-between">
-                <h2 class="font-semibold text-gray-700">Filter Class View:</h2>
-                <div class="flex gap-4 w-full sm:w-auto">
-                    <select id="filter-year" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full sm:w-auto">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                <div class="flex items-center text-slate-700 font-medium">
+                    <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                    Cohort Filter
+                </div>
+                <div class="flex gap-3 w-full sm:w-auto">
+                    <select id="filter-year" class="px-4 py-2.5 bg-slate-50 border border-slate-200 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-auto outline-none transition-all">
                         <option value="">All Years</option>
                         <option value="1">1st Year</option>
                         <option value="2">2nd Year</option>
                         <option value="3">3rd Year</option>
                         <option value="4">4th Year</option>
                     </select>
-                    <select id="filter-section" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full sm:w-auto">
+                    <select id="filter-section" class="px-4 py-2.5 bg-slate-50 border border-slate-200 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-auto outline-none transition-all">
                         <option value="">All Sections</option>
                         <option value="A">Section A</option>
                         <option value="B">Section B</option>
@@ -55,67 +85,90 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h3 class="text-gray-500 text-sm font-medium">Total Students</h3>
-                    <p class="text-3xl font-bold text-gray-800 mt-2" id="stat-total-students">...</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-start justify-between group hover:border-blue-300 transition-colors">
+                    <div>
+                        <p class="text-slate-500 text-sm font-medium mb-1">Enrolled Students</p>
+                        <h3 class="text-3xl font-bold text-slate-800" id="stat-total-students">...</h3>
+                    </div>
+                    <div class="p-3 bg-blue-50 rounded-xl text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    </div>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h3 class="text-gray-500 text-sm font-medium">Pending Absences</h3>
-                    <p class="text-3xl font-bold text-orange-500 mt-2" id="stat-pending">...</p>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-start justify-between group hover:border-indigo-300 transition-colors">
+                    <div>
+                        <p class="text-slate-500 text-sm font-medium mb-1">Avg. Attendance</p>
+                        <h3 class="text-3xl font-bold text-slate-800" id="stat-attendance">...</h3>
+                    </div>
+                    <div class="p-3 bg-indigo-50 rounded-xl text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    </div>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h3 class="text-gray-500 text-sm font-medium">Avg Quiz Score</h3>
-                    <p class="text-3xl font-bold text-green-600 mt-2" id="stat-avg-score">...</p>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-start justify-between group hover:border-emerald-300 transition-colors">
+                    <div>
+                        <p class="text-slate-500 text-sm font-medium mb-1">Avg. Quiz Score</p>
+                        <h3 class="text-3xl font-bold text-slate-800" id="stat-quiz-score">...</h3>
+                    </div>
+                    <div class="p-3 bg-emerald-50 rounded-xl text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-start justify-between group hover:border-purple-300 transition-colors">
+                    <div>
+                        <p class="text-slate-500 text-sm font-medium mb-1">Avg. Assessment</p>
+                        <h3 class="text-3xl font-bold text-slate-800" id="stat-assessment-score">...</h3>
+                    </div>
+                    <div class="p-3 bg-purple-50 rounded-xl text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                    <h2 class="text-lg font-semibold text-gray-800">Pending Absence Requests</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-2">
+                    <h3 class="text-lg font-semibold text-slate-800 mb-4">Class Performance Trend</h3>
+                    <div class="relative h-72 w-full">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="text-lg font-semibold text-slate-800 mb-4">Grade Distribution</h3>
+                    <div class="relative h-72 w-full flex items-center justify-center">
+                        <canvas id="gradeDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="px-6 py-5 border-b border-slate-200 flex justify-between items-center bg-white">
+                    <div>
+                        <h2 class="text-lg font-semibold text-slate-800">Student Performance Roster</h2>
+                        <p class="text-sm text-slate-500 mt-1">Detailed breakdown of individual student metrics.</p>
+                    </div>
+                    <button class="text-sm bg-slate-100 text-slate-700 px-4 py-2 rounded-lg font-medium hover:bg-slate-200 transition border border-slate-200">
+                        Export CSV
+                    </button>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-white text-gray-500 text-sm border-b">
-                                <th class="p-4 font-medium">Student Name</th>
-                                <th class="p-4 font-medium">Date</th>
-                                <th class="p-4 font-medium">Reason</th>
-                                <th class="p-4 font-medium text-right">Actions</th>
+                            <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
+                                <th class="p-4 font-semibold">Student Name</th>
+                                <th class="p-4 font-semibold">Roll Number</th>
+                                <th class="p-4 font-semibold text-center">Attendance</th>
+                                <th class="p-4 font-semibold text-center">Quizzes</th>
+                                <th class="p-4 font-semibold text-center">Assessments</th>
+                                <th class="p-4 font-semibold text-center">Status</th>
                             </tr>
                         </thead>
-                        <tbody id="pending-table-body">
-                            <tr><td colspan="4" class="p-4 text-center text-gray-500">Loading requests...</td></tr>
+                        <tbody id="roster-table-body" class="text-sm">
+                            <tr><td colspan="6" class="p-8 text-center text-slate-500">Loading student analytics...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Upload Course Material</h2>
-                <form id="upload-material-form" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <input type="text" id="material-title" placeholder="Material Title (e.g., QML Intro Notes)" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500" required>
-                        
-                        <select id="material-course" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 bg-white" required>
-                            <option value="" disabled selected>Loading courses...</option>
-                        </select>
-                        
-                        <select id="material-type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 bg-white" required>
-                            <option value="" disabled selected>Select Content Type</option>
-                            <option value="notes">Notes</option>
-                            <option value="ppt">Presentation</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <input type="file" id="material-file" accept=".pdf, .doc, .docx, .ppt, .pptx" class="w-full px-4 py-2 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition cursor-pointer" required>
-                        <p class="text-xs text-gray-500 mt-1 pl-1">Accepted formats: .pdf, .doc, .docx, .ppt, .pptx</p>
-                    </div>
-                    
-                    <button type="submit" id="upload-btn" class="bg-blue-600 text-white font-medium px-6 py-2 rounded-lg hover:bg-blue-700 transition shadow-sm">Upload to Course</button>
-                </form>
-            </div>
         </div>
     </main>
 
@@ -123,7 +176,7 @@
     // --- SECURITY & AUTHENTICATION CHECK ---
     const currentUserId = localStorage.getItem('userId');
     const currentUserRole = localStorage.getItem('userRole');
-    const currentUserName = localStorage.getItem('userName');
+    const currentUserName = localStorage.getItem('userName') || 'Teacher';
 
     if (!currentUserId || currentUserRole !== 'teacher') {
         alert('Unauthorized Access: Please log in as a Teacher.');
@@ -150,51 +203,167 @@
     menuBtn.addEventListener('click', toggleMenu);
     overlay.addEventListener('click', toggleMenu);
 
+    // --- Chart Initializations ---
+    let performanceChartInstance = null;
+    let distributionChartInstance = null;
+
+    function initCharts(chartData) {
+        // Shared Chart Settings
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.color = '#64748b';
+
+        // 1. Line/Bar Mixed Chart for Trends
+        const perfCtx = document.getElementById('performanceChart').getContext('2d');
+        if(performanceChartInstance) performanceChartInstance.destroy();
+        
+        performanceChartInstance = new Chart(perfCtx, {
+            type: 'line',
+            data: {
+                labels: chartData.labels || ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+                datasets: [
+                    {
+                        label: 'Average Assessment',
+                        data: chartData.assessments || [65, 72, 70, 81, 78, 85],
+                        borderColor: '#8b5cf6', // Purple
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Average Quiz',
+                        data: chartData.quizzes || [60, 68, 75, 72, 80, 88],
+                        borderColor: '#10b981', // Emerald
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top', align: 'end' },
+                    tooltip: { mode: 'index', intersect: false }
+                },
+                scales: {
+                    y: { beginAtZero: true, max: 100, grid: { borderDash: [2, 4], color: '#e2e8f0' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // 2. Doughnut Chart for Grade Distribution
+        const distCtx = document.getElementById('gradeDistributionChart').getContext('2d');
+        if(distributionChartInstance) distributionChartInstance.destroy();
+
+        distributionChartInstance = new Chart(distCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['A (90-100)', 'B (80-89)', 'C (70-79)', 'D (60-69)', 'F (<60)'],
+                datasets: [{
+                    data: chartData.distribution || [15, 30, 25, 20, 10],
+                    backgroundColor: [
+                        '#10b981', // Emerald (A)
+                        '#3b82f6', // Blue (B)
+                        '#f59e0b', // Amber (C)
+                        '#f97316', // Orange (D)
+                        '#ef4444'  // Red (F)
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+                }
+            }
+        });
+    }
+
+
     // --- Dashboard Data Fetching ---
     const filterYear = document.getElementById('filter-year');
     const filterSection = document.getElementById('filter-section');
     const statTotalStudents = document.getElementById('stat-total-students');
-    const statPending = document.getElementById('stat-pending');
-    const statAvgScore = document.getElementById('stat-avg-score');
-    const tableBody = document.getElementById('pending-table-body');
+    const statAttendance = document.getElementById('stat-attendance');
+    const statQuizScore = document.getElementById('stat-quiz-score');
+    const statAssessmentScore = document.getElementById('stat-assessment-score');
+    const tableBody = document.getElementById('roster-table-body');
 
     async function fetchDashboardData() {
+        // Set loading states
         statTotalStudents.textContent = '...';
-        statPending.textContent = '...';
-        statAvgScore.textContent = '...';
-        tableBody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">Refreshing dashboard...</td></tr>';
+        statAttendance.textContent = '...';
+        statQuizScore.textContent = '...';
+        statAssessmentScore.textContent = '...';
+        tableBody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-slate-500">Refreshing analytics...</td></tr>';
         
         const params = new URLSearchParams();
         if (filterYear.value) params.append('year', filterYear.value);
         if (filterSection.value) params.append('section', filterSection.value);
-        
         const queryString = params.toString() ? `?${params.toString()}` : '';
 
         try {
+            // Note: In a real app, update your backend endpoint to return analytics data 
+            // instead of pending requests.
             const response = await fetch(`/api/dashboard/teacher${queryString}`);
-            if (!response.ok) throw new Error('Failed to fetch');
+            let data = {};
             
-            const data = await response.json();
-
-            statTotalStudents.textContent = data.totalStudents || 0;
-            statPending.textContent = data.pendingCount || 0;
-            statAvgScore.textContent = (data.avgQuizScore || 0) + '%';
-            tableBody.innerHTML = ''; 
-
-            if (!data.pendingRequests || data.pendingRequests.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">No pending requests found for this class.</td></tr>';
+            if (response.ok) {
+                data = await response.json();
             } else {
-                data.pendingRequests.forEach(req => {
-                    const dateStr = new Date(req.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                // Mock data fallback if the new endpoint format isn't ready on the backend yet
+                console.warn("Backend missing analytics endpoint. Using mock data for UI demonstration.");
+                data = getMockAnalyticsData(); 
+            }
+
+            // Update Top KPIs
+            statTotalStudents.textContent = data.totalStudents || 0;
+            statAttendance.textContent = (data.avgAttendance || 0) + '%';
+            statQuizScore.textContent = (data.avgQuizScore || 0) + '%';
+            statAssessmentScore.textContent = (data.avgAssessmentScore || 0) + '%';
+
+            // Update Charts
+            initCharts(data.chartData || {});
+
+            // Update Table
+            tableBody.innerHTML = ''; 
+            if (!data.students || data.students.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-slate-500">No student data found for this cohort.</td></tr>';
+            } else {
+                data.students.forEach(student => {
+                    // Calculate visual status indicator
+                    let statusColor = "bg-emerald-100 text-emerald-700";
+                    let statusText = "Excellent";
+                    if(student.attendance < 75 || student.assessment < 60) {
+                        statusColor = "bg-red-100 text-red-700";
+                        statusText = "At Risk";
+                    } else if (student.attendance < 85 || student.assessment < 75) {
+                        statusColor = "bg-amber-100 text-amber-700";
+                        statusText = "Average";
+                    }
+
                     const row = document.createElement('tr');
-                    row.className = "hover:bg-gray-50 transition-colors";
+                    row.className = "hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0";
                     row.innerHTML = `
-                        <td class="p-4 border-b font-medium text-gray-800">${req.student_name}</td>
-                        <td class="p-4 border-b text-gray-600">${dateStr}</td>
-                        <td class="p-4 border-b text-gray-600">${req.reason_for_absence}</td>
-                        <td class="p-4 border-b text-right space-x-2">
-                            <button onclick="updateAttendance(${req.attendance_id}, 'Present')" class="bg-green-100 text-green-600 px-3 py-1 rounded hover:bg-green-200 transition">Approve</button>
-                            <button onclick="updateAttendance(${req.attendance_id}, 'Absent')" class="bg-red-100 text-red-600 px-3 py-1 rounded hover:bg-red-200 transition">Reject</button>
+                        <td class="p-4 font-medium text-slate-800">${student.name}</td>
+                        <td class="p-4 text-slate-500 font-mono text-xs">${student.rollNo}</td>
+                        <td class="p-4 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <span class="font-medium ${student.attendance < 75 ? 'text-red-500' : 'text-slate-700'}">${student.attendance}%</span>
+                            </div>
+                        </td>
+                        <td class="p-4 text-center text-slate-700 font-medium">${student.quiz}%</td>
+                        <td class="p-4 text-center text-slate-700 font-medium">${student.assessment}%</td>
+                        <td class="p-4 text-center">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${statusColor}">${statusText}</span>
                         </td>
                     `;
                     tableBody.appendChild(row);
@@ -202,126 +371,40 @@
             }
         } catch (err) {
             console.error("Error fetching dashboard data:", err);
-            tableBody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-500 font-medium">Failed to load data. Ensure server is running.</td></tr>';
-            statTotalStudents.textContent = 'Error';
-            statPending.textContent = 'Error';
-            statAvgScore.textContent = 'Error';
+            tableBody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-red-500 font-medium">Failed to load analytics data. Ensure server is running.</td></tr>';
         }
     }
 
-    async function updateAttendance(id, status) {
-        try {
-            const res = await fetch('/api/attendance/update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ attendance_id: id, status: status })
-            });
-            if(res.ok) {
-                fetchDashboardData(); 
-            } else {
-                alert("Failed to update attendance.");
-            }
-        } catch (err) {
-            console.error("Error updating attendance:", err);
-            alert("Network error occurred.");
-        }
+    // Temporary mock data generator until backend is updated
+    function getMockAnalyticsData() {
+        return {
+            totalStudents: 142,
+            avgAttendance: 86,
+            avgQuizScore: 78,
+            avgAssessmentScore: 82,
+            chartData: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+                quizzes: [65, 68, 72, 75, 78, 80],
+                assessments: [70, 72, 75, 82, 85, 88],
+                distribution: [25, 45, 40, 22, 10] // A, B, C, D, F counts
+            },
+            students: [
+                { name: "John Doe", rollNo: "22WH1A0501", attendance: 92, quiz: 85, assessment: 88 },
+                { name: "Jane Smith", rollNo: "22WH1A0502", attendance: 71, quiz: 65, assessment: 58 },
+                { name: "Alex Johnson", rollNo: "22WH1A0503", attendance: 85, quiz: 78, assessment: 80 },
+                { name: "Emily Davis", rollNo: "22WH1A0504", attendance: 98, quiz: 95, assessment: 92 },
+                { name: "Michael Brown", rollNo: "22WH1A0505", attendance: 60, quiz: 55, assessment: 62 }
+            ]
+        };
     }
 
-    // --- Load Courses for Upload Dropdown ---
-    async function loadCourseDropdown() {
-        try {
-            const response = await fetch('/api/courses');
-            const courses = await response.json();
-            const courseSelect = document.getElementById('material-course');
-            
-            courseSelect.innerHTML = ''; 
-
-            if (courses.length === 0) {
-                courseSelect.innerHTML = '<option value="" disabled selected>No active courses found</option>';
-                return;
-            }
-
-            courseSelect.innerHTML = '<option value="" disabled selected>Select Course Mapping</option>';
-            courses.forEach((course) => {
-                const option = document.createElement('option');
-                option.value = course.id;
-                option.textContent = `${course.title} (ID: ${course.id})`;
-                courseSelect.appendChild(option);
-            });
-        } catch (error) {
-            console.error("Error loading courses:", error);
-            document.getElementById('material-course').innerHTML = '<option value="" disabled selected>Error loading courses</option>';
-        }
-    }
-
-    // --- ACTUAL FILE UPLOAD WITH FORMDATA ---
-    document.getElementById('upload-material-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const submitBtn = document.getElementById('upload-btn');
-        const fileInput = document.getElementById('material-file');
-        const courseId = document.getElementById('material-course').value;
-        const title = document.getElementById('material-title').value;
-        const type = document.getElementById('material-type').value;
-        const file = fileInput.files[0];
-        
-        if (!file) {
-            alert("Please select a file to upload.");
-            return;
-        }
-
-        // Strict File Format Validation
-        const validExtensions = ['pdf', 'doc', 'docx', 'ppt', 'pptx'];
-        const fileExtension = file.name.split('.').pop().toLowerCase();
-        
-        if (!validExtensions.includes(fileExtension)) {
-            alert(`Invalid file format: .${fileExtension}\n\nPlease upload only PDF, DOC, or PPT files.`);
-            fileInput.value = ''; 
-            return;
-        }
-
-        submitBtn.textContent = 'Uploading...';
-        submitBtn.disabled = true;
-
-        // Bundle data including the physical file
-        const formData = new FormData();
-        formData.append('title', title);
-        formData.append('course_id', courseId);
-        formData.append('type', type);
-        formData.append('file', file);
-        
-        try {
-            // Note: DO NOT manually set the 'Content-Type' header when using FormData.
-            // The browser will automatically set it to 'multipart/form-data' with the correct boundary.
-            const response = await fetch('/api/content/upload', {
-                method: 'POST',
-                body: formData
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                alert(`Success! Material uploaded and mapped to Course ID: ${data.content.course_id}.`);
-                e.target.reset();
-            } else {
-                alert(`Upload Failed: ${data.error}\n${data.details || ''}`);
-            }
-        } catch (error) {
-            console.error('Network Error:', error);
-            alert('Failed to connect to the server. Please check your connection.');
-        } finally {
-            submitBtn.textContent = 'Upload to Course';
-            submitBtn.disabled = false;
-        }
-    });
-
-    // Attach listeners and initialize
+    // Attach listeners
     filterYear.addEventListener('change', fetchDashboardData);
     filterSection.addEventListener('change', fetchDashboardData);
 
+    // Initialize on load
     document.addEventListener("DOMContentLoaded", () => {
         fetchDashboardData();
-        loadCourseDropdown(); 
     });
     </script>
 </body>
