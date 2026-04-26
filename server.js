@@ -62,8 +62,8 @@ app.post('/api/login', async (req, res) => {
     if (user.rows.length === 0) return res.status(401).json({ error: 'Invalid Credentials' });
     res.json(user.rows[0]);
   } catch (err) { 
-    console.error("DB Error Details:", err); // ADD THIS LINE
-    res.status(500).json({ error: 'Database Error', details: err.message }); // Send it to the frontend for debugging
+    console.error("DB Error Details:", err);
+    res.status(500).json({ error: 'Database Error', details: err.message });
   }
 });
 
@@ -157,7 +157,6 @@ app.get('/api/courses/details/:id', async (req, res) => {
     } catch (err) { res.status(500).json({ error: 'Server Error' }); }
 });
 
-// NEW: Get enrolled students for a specific course
 app.get('/api/courses/:course_id/students', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -241,6 +240,64 @@ app.get('/api/quizzes-dashboard/:course_id', async (req, res) => {
         const totalStudentsRes = await pool.query("SELECT COUNT(*) FROM users WHERE role = 'student'");
         res.json({ totalStudents: parseInt(totalStudentsRes.rows[0].count), totalQuizzes: quizStatsRes.rows.length, quizStats: quizStatsRes.rows, leaderboard: leaderboardRes.rows });
     } catch (error) { res.status(500).json({ error: 'Failed to fetch quiz dashboard data' }); }
+});
+
+// ==========================================
+// --- ASSIGNMENTS (TEACHER) ---
+// ==========================================
+
+// Create a new assignment
+app.post('/api/teacher/courses/:id/assignments', async (req, res) => {
+    const courseId = req.params.id;
+    const { title, description, max_marks, due_date } = req.body;
+    try {
+        const result = await pool.query(
+            'INSERT INTO assignments (course_id, title, description, max_marks, due_date) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [courseId, title, description, max_marks || 100, due_date]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (err) { 
+        res.status(500).json({ error: 'Failed to create assignment' }); 
+    }
+});
+
+// Get all assignments for a course AND their specific student submissions
+app.get('/api/teacher/courses/:id/assignments', async (req, res) => {
+    try {
+        // Fetch all assignments for this course
+        const assignmentsRes = await pool.query('SELECT * FROM assignments WHERE course_id = $1 ORDER BY due_date DESC', [req.params.id]);
+        const assignments = assignmentsRes.rows;
+
+        // Fetch submissions nested inside each assignment
+        for (let assignment of assignments) {
+            const subRes = await pool.query(`
+                SELECT s.*, u.name as student_name 
+                FROM assignment_submissions s 
+                JOIN users u ON s.student_id = u.id 
+                WHERE s.assignment_id = $1
+                ORDER BY s.submitted_at DESC
+            `, [assignment.id]);
+            assignment.submissions = subRes.rows;
+        }
+        res.json(assignments);
+    } catch (err) { 
+        res.status(500).json({ error: 'Server Error loading assignments' }); 
+    }
+});
+
+// Grade a specific submission
+app.post('/api/teacher/assignments/grade/:id', async (req, res) => {
+    const submissionId = req.params.id;
+    const { marks_awarded, feedback } = req.body;
+    try {
+        await pool.query(
+            'UPDATE assignment_submissions SET marks_awarded = $1, teacher_feedback = $2 WHERE id = $3',
+            [marks_awarded, feedback, submissionId]
+        );
+        res.json({ success: true });
+    } catch (err) { 
+        res.status(500).json({ error: 'Failed to save grade' }); 
+    }
 });
 
 // ==========================================
@@ -390,6 +447,49 @@ app.post('/api/attendance/report', async (req, res) => {
     const result = await pool.query(`INSERT INTO attendance (student_id, course_id, status, reason_for_absence, date) VALUES ($1, $2, 'Pending', $3, $4) RETURNING *`, [req.body.student_id, req.body.course_id, req.body.reason_for_absence, req.body.date]);
     res.json(result.rows[0]);
   } catch (err) { res.status(500).send('Server Error.'); }
+});
+
+// ==========================================
+// --- ASSIGNMENTS (STUDENT) ---
+// ==========================================
+
+// Get all assignments for a course + Left join this specific student's submission
+app.get('/api/student/courses/:courseId/assignments/:studentId', async (req, res) => {
+    const { courseId, studentId } = req.params;
+    try {
+        // Get the assignments
+        const assignmentsRes = await pool.query('SELECT * FROM assignments WHERE course_id = $1 ORDER BY due_date ASC', [courseId]);
+        const assignments = assignmentsRes.rows;
+
+        // Attach student's submission (if any) to each assignment object
+        for (let assignment of assignments) {
+            const subRes = await pool.query(
+                'SELECT * FROM assignment_submissions WHERE assignment_id = $1 AND student_id = $2', 
+                [assignment.id, studentId]
+            );
+            assignment.submission = subRes.rows.length > 0 ? subRes.rows[0] : null;
+        }
+
+        res.json(assignments);
+    } catch (err) { 
+        res.status(500).json({ error: 'Server Error loading assignments' }); 
+    }
+});
+
+// Submit an assignment
+app.post('/api/student/assignments/submit', async (req, res) => {
+    const { assignment_id, student_id, answer_text } = req.body;
+    try {
+        await pool.query(`
+            INSERT INTO assignment_submissions (assignment_id, student_id, answer_text) 
+            VALUES ($1, $2, $3) 
+            ON CONFLICT (assignment_id, student_id) 
+            DO UPDATE SET answer_text = EXCLUDED.answer_text, submitted_at = CURRENT_TIMESTAMP
+        `, [assignment_id, student_id, answer_text]);
+        res.json({ success: true });
+    } catch (err) { 
+        res.status(500).json({ error: 'Failed to submit assignment' }); 
+    }
 });
 
 const PORT = process.env.PORT || 5000;

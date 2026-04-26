@@ -3,455 +3,603 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course Details - ACE Engineering College</title>
+    <title>Manage Course</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .hidden { display: none !important; }
+        .flex { display: flex !important; }
+    </style>
 </head>
 <body class="bg-gray-50 flex h-screen overflow-hidden">
 
-    <div id="quiz-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 backdrop-blur-sm p-4">
-        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-2xl overflow-y-auto max-h-[90vh]">
-            <h2 id="modal-title" class="text-xl font-bold text-gray-800 mb-4">Create New Quiz</h2>
-            <form id="quiz-form" class="space-y-4">
-                <input type="hidden" id="edit-quiz-id">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Quiz Title</label>
-                    <input type="text" id="quiz-title" placeholder="e.g., Midterm Assessment" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500" required>
+    <div id="quiz-builder-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col">
+            <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
+                <h2 class="text-xl font-bold text-gray-800">Quiz Builder</h2>
+                <button onclick="closeQuizBuilder()" class="text-gray-400 hover:text-red-500 font-bold text-2xl">&times;</button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto flex-1 flex gap-6">
+                <div class="w-1/2 flex flex-col gap-4 border-r pr-6">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700">Quiz Title</label>
+                        <input type="text" id="new-quiz-title" class="w-full border rounded p-2 focus:ring-blue-500" placeholder="e.g., Midterm Exam">
+                    </div>
+                    <div class="border-t pt-4 mt-2">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Add a Question</label>
+                        <textarea id="qb-question" class="w-full border rounded p-2 mb-2 focus:ring-blue-500" rows="2" placeholder="Question text..."></textarea>
+                        <div class="space-y-2 mb-3 text-sm">
+                            <input type="text" id="qb-opt-a" class="w-full border rounded p-1" placeholder="Option A">
+                            <input type="text" id="qb-opt-b" class="w-full border rounded p-1" placeholder="Option B">
+                            <input type="text" id="qb-opt-c" class="w-full border rounded p-1" placeholder="Option C">
+                            <input type="text" id="qb-opt-d" class="w-full border rounded p-1" placeholder="Option D">
+                        </div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Correct Answer(s)</label>
+                        <div class="flex gap-4 mb-4">
+                            <label><input type="checkbox" name="qb-correct" value="A"> A</label>
+                            <label><input type="checkbox" name="qb-correct" value="B"> B</label>
+                            <label><input type="checkbox" name="qb-correct" value="C"> C</label>
+                            <label><input type="checkbox" name="qb-correct" value="D"> D</label>
+                        </div>
+                        <button onclick="addQuestionToQuiz()" class="w-full bg-gray-800 text-white font-bold py-2 rounded hover:bg-gray-900">+ Add Question</button>
+                    </div>
                 </div>
-                <div id="questions-container" class="space-y-6 mt-4"></div>
-                <button type="button" onclick="addQuestionBlock()" class="w-full py-3 border-2 border-dashed border-gray-300 text-gray-500 rounded-lg font-medium hover:bg-gray-50 hover:text-blue-600 transition">+ Add Another Question</button>
-                <div class="mt-6 flex justify-end gap-3 pt-4 border-t">
-                    <button type="button" onclick="closeQuizModal()" class="px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200">Cancel</button>
-                    <button type="submit" id="save-quiz-btn" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 shadow-sm">Save Quiz</button>
+
+                <div class="w-1/2 flex flex-col">
+                    <h3 class="font-bold text-gray-700 mb-2">Questions in this Quiz (<span id="qb-count">0</span>)</h3>
+                    <div id="qb-question-list" class="flex-1 overflow-y-auto space-y-3 bg-gray-50 p-3 rounded border">
+                        <p class="text-sm text-gray-400 italic">No questions added yet.</p>
+                    </div>
                 </div>
-            </form>
+            </div>
+            
+            <div class="p-4 border-t bg-gray-50 rounded-b-xl flex justify-end gap-3 shrink-0">
+                <button onclick="closeQuizBuilder()" class="px-6 py-2 bg-white border text-gray-700 font-bold rounded">Cancel</button>
+                <button onclick="saveFinalQuiz()" class="px-6 py-2 bg-blue-600 text-white font-bold rounded hover:bg-blue-700">Save Quiz & Publish</button>
+            </div>
         </div>
     </div>
 
-    <div id="results-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 backdrop-blur-sm p-4">
-        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-3xl overflow-y-auto max-h-[90vh]">
-            <div class="flex justify-between items-center border-b pb-4 mb-4">
-                <h2 class="text-xl font-bold text-gray-800">Student Submissions</h2>
-                <button onclick="closeResultsModal()" class="text-gray-400 hover:text-gray-800">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
+    <div id="quiz-results-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[80vh] flex flex-col overflow-hidden">
+            <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
+                <h2 class="text-xl font-bold text-gray-800">Quiz Results</h2>
+                <button onclick="closeResultsModal()" class="text-gray-400 hover:text-red-500 font-bold text-2xl">&times;</button>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead class="bg-gray-50 text-gray-600 text-sm border-b">
+            <div class="p-6 overflow-y-auto flex-1">
+                <table class="w-full text-left text-sm border">
+                    <thead class="bg-gray-100 border-b">
                         <tr>
-                            <th class="p-3 font-medium">Student Name</th>
-                            <th class="p-3 font-medium">Roll Number</th>
-                            <th class="p-3 font-medium text-right">Score</th>
-                            <th class="p-3 font-medium text-right">Submitted At</th>
+                            <th class="p-3 font-bold text-gray-600">Roll Number</th>
+                            <th class="p-3 font-bold text-gray-600">Student Name</th>
+                            <th class="p-3 font-bold text-gray-600">Score</th>
+                            <th class="p-3 font-bold text-gray-600">Submitted At</th>
                         </tr>
                     </thead>
-                    <tbody id="results-table-body" class="divide-y divide-gray-100"></tbody>
+                    <tbody id="quiz-results-tbody">
+                        </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <aside class="bg-gray-900 text-white w-64 flex-shrink-0 hidden md:flex flex-col z-30">
-        <div class="p-6">
-            <h2 class="text-xl font-bold">Instructor Panel</h2>
-            <p class="text-gray-400 text-sm mt-1">CSE (AI & ML) Dept</p>
+    <div id="grade-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl p-6 flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-4 border-b pb-2 shrink-0">
+                <h2 class="text-xl font-bold text-gray-800">Grade Submission</h2>
+                <button onclick="closeGradeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <div class="mb-4 overflow-y-auto flex-1">
+                <p class="text-sm text-gray-500 font-bold">Student Answer:</p>
+                <div id="student-answer-text" class="bg-gray-50 p-4 rounded border mt-1 text-gray-700 whitespace-pre-wrap font-medium"></div>
+            </div>
+            <form id="grade-form" class="space-y-4 shrink-0 border-t pt-4">
+                <input type="hidden" id="submission-id">
+                <div class="flex gap-4">
+                    <div class="w-1/3">
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Marks Awarded</label>
+                        <input type="number" id="marks-awarded" class="w-full border border-gray-300 rounded p-2 focus:ring-blue-500" required>
+                    </div>
+                    <div class="w-2/3">
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Max Marks</label>
+                        <input type="text" id="max-marks-display" class="w-full border border-gray-300 rounded p-2 bg-gray-100" disabled>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Feedback (Optional)</label>
+                    <textarea id="teacher-feedback" class="w-full border border-gray-300 rounded p-2 focus:ring-blue-500" rows="3"></textarea>
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700 shadow">Submit Grade</button>
+                </div>
+            </form>
         </div>
-        <nav class="mt-4">
-            <a href="/teacher-dashboard.html" class="block py-3 px-6 text-gray-400 hover:bg-gray-800 transition">Dashboard</a>
-            <a href="/manage-attendance.html" class="block py-3 px-6 text-gray-400 hover:bg-gray-800 transition">Manage Attendance</a>
-            <a href="/manage-courses.html" class="block py-3 px-6 bg-gray-800 border-l-4 border-blue-500 text-white">Course Management</a>
-        </nav>
-    </aside>
+    </div>
+
 
     <main class="flex-1 flex flex-col h-screen overflow-y-auto w-full">
-        <header class="bg-white shadow-sm px-6 py-4 flex items-center justify-between">
+        <header class="bg-white shadow-sm px-6 py-4 flex items-center justify-between sticky top-0 z-40">
             <div class="flex items-center gap-4">
-                <button onclick="window.location.href='/manage-courses.html'" class="text-gray-500 hover:text-blue-600 transition font-bold">&larr; Back</button>
-                <h1 class="text-xl font-semibold text-gray-800">Course Details</h1>
+                <button onclick="window.location.href='/teacher-dashboard.html'" class="text-gray-500 hover:text-blue-600 transition font-bold">&larr; Dashboard</button>
+                <h1 class="text-xl font-bold text-gray-800" id="course-title-header">Loading Course...</h1>
             </div>
-            <button onclick="logout()" class="text-gray-500 hover:text-gray-700 font-medium">Logout</button>
         </header>
 
-        <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 flex justify-between items-start">
-                <div>
-                    <h1 id="display-course-title" class="text-3xl font-bold text-gray-900 mb-2">Loading...</h1>
-                    <p id="display-course-desc" class="text-gray-600 max-w-2xl">...</p>
-                </div>
-            </div>
-
+        <div class="p-6 space-y-6 max-w-6xl mx-auto w-full mt-4">
+            
             <div class="border-b border-gray-200">
                 <nav class="-mb-px flex space-x-8">
-                    <button onclick="switchTab('materials')" id="tab-materials" class="border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition">Course Materials</button>
-                    <button onclick="switchTab('quizzes')" id="tab-quizzes" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition">Quizzes & Assignments</button>
-                    <button onclick="switchTab('students')" id="tab-students" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition">Enrolled Students</button>
+                    <button onclick="switchTab('materials')" id="tab-materials" class="border-blue-500 text-blue-600 py-4 border-b-2 font-bold text-sm transition">Materials</button>
+                    <button onclick="switchTab('quizzes')" id="tab-quizzes" class="border-transparent text-gray-500 hover:text-gray-700 py-4 border-b-2 font-bold text-sm transition">Quizzes</button>
+                    <button onclick="switchTab('assignments')" id="tab-assignments" class="border-transparent text-gray-500 hover:text-gray-700 py-4 border-b-2 font-bold text-sm transition">Assignments</button>
                 </nav>
             </div>
 
-            <div id="section-materials" class="block space-y-4">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-bold text-gray-800">Uploaded Files</h2>
-                    <button onclick="window.location.href='/teacher-dashboard.html'" class="text-sm bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-semibold hover:bg-blue-200 transition">Upload New File</button>
+            <div id="section-materials" class="block space-y-6">
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <h2 class="font-bold text-lg mb-4">Upload New Material</h2>
+                    <form id="upload-content-form" class="flex flex-col sm:flex-row gap-4 items-end">
+                        <div class="w-full sm:w-1/3">
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Title</label>
+                            <input type="text" id="content-title" class="w-full border rounded p-2 focus:ring-blue-500" required>
+                        </div>
+                        <div class="w-full sm:w-1/4">
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Type</label>
+                            <select id="content-type" class="w-full border rounded p-2 focus:ring-blue-500" required>
+                                <option value="notes">Notes (PDF/Word)</option>
+                                <option value="ppt">Presentation (PPT)</option>
+                            </select>
+                        </div>
+                        <div class="w-full sm:w-1/3">
+                            <label class="block text-sm font-bold text-gray-700 mb-1">File</label>
+                            <input type="file" id="content-file" accept=".pdf,.doc,.docx,.ppt,.pptx" class="w-full border rounded p-1.5" required>
+                        </div>
+                        <button type="submit" id="upload-btn" class="w-full sm:w-auto bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700 whitespace-nowrap">Upload</button>
+                    </form>
                 </div>
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <table class="w-full text-left">
-                        <thead class="bg-gray-50 border-b border-gray-100">
+
+                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-gray-50 border-b">
                             <tr>
-                                <th class="p-4 text-sm font-medium text-gray-500">File Name</th>
-                                <th class="p-4 text-sm font-medium text-gray-500">Type</th>
-                                <th class="p-4 text-sm font-medium text-gray-500">Date Uploaded</th>
-                                <th class="p-4 text-sm font-medium text-gray-500 text-right">Actions</th>
+                                <th class="p-4 font-bold text-gray-600">Title</th>
+                                <th class="p-4 font-bold text-gray-600 text-center">Type</th>
+                                <th class="p-4 font-bold text-gray-600">Date Uploaded</th>
+                                <th class="p-4 font-bold text-gray-600 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="materials-list" class="divide-y divide-gray-100">
-                            <tr><td colspan="4" class="p-8 text-center text-gray-500">Loading materials...</td></tr>
+                            <tr><td colspan="4" class="p-6 text-center text-gray-500">Loading...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <div id="section-quizzes" class="hidden space-y-4">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-bold text-gray-800">Active Quizzes</h2>
-                    <button onclick="openQuizModal()" class="text-sm bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 shadow-sm">+ Create Quiz</button>
+            <div id="section-quizzes" class="hidden space-y-6">
+                
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-gray-800">Course Quizzes</h2>
+                    <button onclick="openQuizBuilder()" class="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700 shadow-sm">+ Create New Quiz</button>
                 </div>
-                <div id="quizzes-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="col-span-full p-8 text-center text-gray-500 bg-white rounded-xl border border-dashed">Loading quizzes...</div>
-                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="quizzes-list">
+                    </div>
             </div>
 
-            <div id="section-students" class="hidden space-y-4">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-bold text-gray-800">Enrolled Students</h2>
-                    <span id="student-count-badge" class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">0 Students</span>
+            <div id="section-assignments" class="hidden space-y-6">
+                
+                <div class="bg-white p-6 rounded-xl border shadow-sm">
+                    <h2 class="font-bold text-lg mb-4">Post New Assignment</h2>
+                    <form id="create-assignment-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700">Assignment Title</label>
+                            <input type="text" id="assign-title" class="mt-1 w-full border border-gray-300 rounded p-2 focus:ring-blue-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700">Questions / Instructions</label>
+                            <textarea id="assign-desc" class="mt-1 w-full border border-gray-300 rounded p-2 focus:ring-blue-500" rows="3" required></textarea>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="w-1/2">
+                                <label class="block text-sm font-bold text-gray-700">Max Marks</label>
+                                <input type="number" id="assign-marks" class="mt-1 w-full border border-gray-300 rounded p-2 focus:ring-blue-500" value="100" required>
+                            </div>
+                            <div class="w-1/2">
+                                <label class="block text-sm font-bold text-gray-700">Due Date & Time</label>
+                                <input type="datetime-local" id="assign-due" class="mt-1 w-full border border-gray-300 rounded p-2 focus:ring-blue-500" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700">Post Assignment</button>
+                    </form>
                 </div>
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="bg-gray-50 border-b border-gray-100">
-                            <tr>
-                                <th class="p-4 text-sm font-medium text-gray-500">Student Name</th>
-                                <th class="p-4 text-sm font-medium text-gray-500">Roll Number</th>
-                                <th class="p-4 text-sm font-medium text-gray-500">Email Address</th>
-                                <th class="p-4 text-sm font-medium text-gray-500 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="students-list" class="divide-y divide-gray-100">
-                            <tr><td colspan="4" class="p-8 text-center text-gray-500">Loading students...</td></tr>
-                        </tbody>
-                    </table>
+
+                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                    <h2 class="font-bold text-lg p-6 border-b bg-gray-50">Manage Submissions</h2>
+                    <div id="assignments-list" class="divide-y divide-gray-200">
+                        <div class="p-8 text-center text-gray-500">Loading assignments...</div>
+                    </div>
                 </div>
+
             </div>
 
         </div>
     </main>
 
     <script>
-        if (localStorage.getItem('userRole') !== 'teacher') window.location.href = '/';
         const courseId = new URLSearchParams(window.location.search).get('id');
-        if (!courseId) window.location.href = '/manage-courses.html';
-        function logout() { localStorage.clear(); window.location.href = '/'; }
+        if (!courseId) window.location.href = '/teacher-dashboard.html';
 
-        let currentQuizzes = []; 
-        let questionCounter = 0;
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchCourseDetails();
+            loadMaterials();
+        });
 
-        // Dynamic Tab Switcher
+        // Tab Switcher
         function switchTab(tab) {
-            ['materials', 'quizzes', 'students'].forEach(t => {
+            ['materials', 'quizzes', 'assignments'].forEach(t => {
                 document.getElementById(`section-${t}`).classList.toggle('hidden', tab !== t);
                 document.getElementById(`tab-${t}`).className = tab === t 
-                    ? 'border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition' 
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition';
+                    ? 'border-blue-500 text-blue-600 py-4 border-b-2 font-bold text-sm transition' 
+                    : 'border-transparent text-gray-500 hover:text-gray-700 py-4 border-b-2 font-bold text-sm transition';
             });
+            if (tab === 'materials') loadMaterials();
+            if (tab === 'quizzes') loadQuizzes();
+            if (tab === 'assignments') loadAssignments();
         }
 
-        async function loadCourseData() {
+        async function fetchCourseDetails() {
             try {
-                const courseRes = await fetch(`/api/courses/details/${courseId}`);
-                const course = await courseRes.json();
-                document.getElementById('display-course-title').textContent = course.title;
-                document.getElementById('display-course-desc').textContent = course.description || '';
-                
-                loadMaterials();
-                loadQuizzes();
-                loadStudents(); // New call
-            } catch (err) { alert('Error loading course.'); }
-        }
-
-        // ==========================================
-        // ENROLLED STUDENTS LOGIC (NEW)
-        // ==========================================
-        async function loadStudents() {
-            const list = document.getElementById('students-list');
-            const badge = document.getElementById('student-count-badge');
-            
-            try {
-                const res = await fetch(`/api/courses/${courseId}/students`);
-                const students = await res.json();
-                
-                badge.textContent = `${students.length} Student${students.length !== 1 ? 's' : ''}`;
-                list.innerHTML = '';
-
-                if (students.length === 0) {
-                    list.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-500">No students are currently enrolled in this course.</td></tr>`;
-                    return;
-                }
-
-                students.forEach(student => {
-                    list.innerHTML += `
-                        <tr class="hover:bg-gray-50 transition">
-                            <td class="p-4 font-bold text-gray-800">${student.name}</td>
-                            <td class="p-4 text-gray-600 font-mono text-sm">${student.roll_number || 'N/A'}</td>
-                            <td class="p-4 text-gray-600 text-sm">${student.email}</td>
-                            <td class="p-4 text-right">
-                                <button onclick="removeStudent(${student.student_id}, '${student.name}')" class="text-red-600 hover:text-red-800 text-sm font-bold bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition">Remove</button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            } catch(e) {
-                list.innerHTML = `<tr><td colspan="4" class="p-4 text-red-500 text-center">Error loading students.</td></tr>`;
+                const res = await fetch(`/api/courses/details/${courseId}`);
+                if (!res.ok) throw new Error('Course not found');
+                const course = await res.json();
+                document.getElementById('course-title-header').textContent = course.title;
+            } catch (err) {
+                alert("Failed to load course details.");
+                window.location.href = '/teacher-dashboard.html';
             }
         }
 
-        async function removeStudent(studentId, studentName) {
-            if (!confirm(`Are you sure you want to completely remove ${studentName} from this course?`)) return;
-            
-            try {
-                // Safely reuse the unenroll route
-                const res = await fetch('/api/student/unenroll', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ student_id: studentId, course_id: courseId })
-                });
-                if (res.ok) {
-                    loadStudents(); // Refresh visually
-                } else { alert("Failed to remove student."); }
-            } catch (e) { alert("Network error while removing student."); }
-        }
-
         // ==========================================
-        // MATERIALS LOGIC
+        // 1. MATERIALS LOGIC
         // ==========================================
         async function loadMaterials() {
             const list = document.getElementById('materials-list');
             try {
                 const res = await fetch(`/api/content/course/${courseId}`);
-                const materials = await res.json();
+                const data = await res.json();
                 list.innerHTML = '';
-                if (materials.length === 0) return list.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-500">No materials uploaded yet.</td></tr>`;
-                materials.forEach(mat => {
+                
+                if (data.length === 0) {
+                    list.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500 italic">No materials uploaded yet.</td></tr>`;
+                    return;
+                }
+
+                data.forEach(item => {
                     list.innerHTML += `
                         <tr class="hover:bg-gray-50">
-                            <td class="p-4 font-medium"><a href="${mat.file_url}" target="_blank" class="hover:text-blue-600 underline">${mat.title}</a></td>
-                            <td class="p-4"><span class="bg-gray-100 px-2 py-1 rounded text-xs font-bold uppercase">${mat.type}</span></td>
-                            <td class="p-4 text-gray-500 text-sm">${new Date(mat.uploaded_at).toLocaleDateString()}</td>
-                            <td class="p-4 text-right space-x-2">
-                                <button onclick="deleteContent(${mat.id})" class="text-red-600 hover:underline text-sm font-medium">Delete</button>
+                            <td class="p-4 font-medium text-gray-800">${item.title}</td>
+                            <td class="p-4 text-center"><span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-bold uppercase">${item.type}</span></td>
+                            <td class="p-4 text-gray-500">${new Date(item.uploaded_at).toLocaleDateString()}</td>
+                            <td class="p-4 text-right">
+                                <a href="${item.file_url}" target="_blank" class="text-blue-600 font-bold hover:underline mr-3">View</a>
+                                <button onclick="deleteMaterial(${item.id})" class="text-red-500 font-bold hover:underline">Delete</button>
                             </td>
                         </tr>
                     `;
                 });
-            } catch(e) { }
+            } catch (err) { list.innerHTML = `<tr><td colspan="4" class="p-4 text-red-500">Error loading materials.</td></tr>`; }
         }
 
-        async function deleteContent(id) {
-            if(!confirm("Delete this file permanently?")) return;
-            await fetch(`/api/content/${id}`, { method: 'DELETE' });
-            loadMaterials();
+        document.getElementById('upload-content-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('upload-btn');
+            btn.textContent = 'Uploading...'; btn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('course_id', courseId);
+            formData.append('title', document.getElementById('content-title').value);
+            formData.append('type', document.getElementById('content-type').value);
+            formData.append('file', document.getElementById('content-file').files[0]);
+
+            try {
+                const res = await fetch('/api/content/upload', { method: 'POST', body: formData });
+                if (res.ok) {
+                    e.target.reset();
+                    loadMaterials();
+                } else {
+                    alert('Upload failed.');
+                }
+            } catch (err) { alert('Network error during upload.'); }
+            finally { btn.textContent = 'Upload'; btn.disabled = false; }
+        });
+
+        async function deleteMaterial(id) {
+            if (!confirm('Are you sure you want to delete this material?')) return;
+            try {
+                await fetch(`/api/content/${id}`, { method: 'DELETE' });
+                loadMaterials();
+            } catch (err) { alert('Failed to delete material.'); }
         }
 
         // ==========================================
-        // QUIZ LOGIC
+        // 2. QUIZ LOGIC
         // ==========================================
+        let currentQuizQuestions = [];
+
         async function loadQuizzes() {
             const list = document.getElementById('quizzes-list');
             try {
                 const res = await fetch(`/api/quizzes/course/${courseId}`);
-                currentQuizzes = await res.json();
-                
+                const quizzes = await res.json();
                 list.innerHTML = '';
-                if (currentQuizzes.length === 0) return list.innerHTML = `<div class="col-span-full p-8 text-center text-gray-500 bg-white border border-dashed rounded-xl">No quizzes created yet.</div>`;
+                
+                if (quizzes.length === 0) {
+                    list.innerHTML = `<div class="col-span-full p-8 text-center text-gray-500 border border-dashed rounded-xl">No quizzes created yet.</div>`;
+                    return;
+                }
 
-                currentQuizzes.forEach(quiz => {
+                quizzes.forEach(q => {
+                    let qCount = 0;
+                    try { qCount = typeof q.questions === 'string' ? JSON.parse(q.questions).length : q.questions.length; } catch(e){}
+
                     list.innerHTML += `
-                        <div class="bg-white p-6 rounded-xl border shadow-sm hover:shadow-md transition">
-                            <div class="flex justify-between items-start mb-1">
-                                <h3 class="font-bold text-lg text-gray-800">${quiz.title}</h3>
-                                <button onclick="deleteQuiz(${quiz.id})" class="text-red-500 hover:bg-red-50 p-1 rounded transition" title="Delete Quiz">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                </button>
-                            </div>
-                            <p class="text-sm text-gray-500 mb-4">${quiz.questions.length} Question(s)</p>
-                            <div class="flex gap-2">
-                                <button onclick="openQuizModal(${quiz.id})" class="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-200">Edit Quiz</button>
-                                <button onclick="viewResults(${quiz.id})" class="flex-1 bg-green-50 text-green-700 py-2 rounded-lg text-sm font-medium hover:bg-green-100">View Results</button>
+                        <div class="bg-white border rounded-xl p-5 shadow-sm hover:shadow transition flex flex-col">
+                            <h3 class="font-bold text-lg text-gray-800 mb-1">${q.title}</h3>
+                            <p class="text-sm text-gray-500 mb-4">${qCount} Questions • Created ${new Date(q.created_at).toLocaleDateString()}</p>
+                            <div class="mt-auto pt-4 border-t flex justify-between">
+                                <button onclick="viewQuizResults(${q.id})" class="text-blue-600 font-bold hover:underline text-sm">View Grades</button>
+                                <button onclick="deleteQuiz(${q.id})" class="text-red-500 font-bold hover:underline text-sm">Delete</button>
                             </div>
                         </div>
                     `;
                 });
-            } catch(e) { }
+            } catch (err) { console.error(err); }
+        }
+
+        // Quiz Builder
+        function openQuizBuilder() {
+            currentQuizQuestions = [];
+            document.getElementById('new-quiz-title').value = '';
+            document.getElementById('qb-question-list').innerHTML = '<p class="text-sm text-gray-400 italic">No questions added yet.</p>';
+            document.getElementById('qb-count').textContent = '0';
+            clearQuestionForm();
+            
+            const modal = document.getElementById('quiz-builder-modal');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+        }
+
+        function closeQuizBuilder() {
+            const modal = document.getElementById('quiz-builder-modal');
+            modal.classList.add('hidden'); modal.classList.remove('flex');
+        }
+
+        function clearQuestionForm() {
+            document.getElementById('qb-question').value = '';
+            ['a', 'b', 'c', 'd'].forEach(l => document.getElementById(`qb-opt-${l}`).value = '');
+            document.querySelectorAll('input[name="qb-correct"]').forEach(cb => cb.checked = false);
+        }
+
+        function addQuestionToQuiz() {
+            const qText = document.getElementById('qb-question').value.trim();
+            const opts = {
+                A: document.getElementById('qb-opt-a').value.trim(),
+                B: document.getElementById('qb-opt-b').value.trim(),
+                C: document.getElementById('qb-opt-c').value.trim(),
+                D: document.getElementById('qb-opt-d').value.trim(),
+            };
+            const corrects = Array.from(document.querySelectorAll('input[name="qb-correct"]:checked')).map(cb => cb.value);
+
+            if (!qText || !opts.A || !opts.B || !opts.C || !opts.D || corrects.length === 0) {
+                return alert("Please fill out the question, all 4 options, and select at least one correct answer.");
+            }
+
+            currentQuizQuestions.push({ question: qText, options: opts, correct_answers: corrects });
+            clearQuestionForm();
+            renderQuestionList();
+        }
+
+        function renderQuestionList() {
+            const list = document.getElementById('qb-question-list');
+            document.getElementById('qb-count').textContent = currentQuizQuestions.length;
+            
+            if (currentQuizQuestions.length === 0) {
+                list.innerHTML = '<p class="text-sm text-gray-400 italic">No questions added yet.</p>';
+                return;
+            }
+
+            list.innerHTML = currentQuizQuestions.map((q, i) => `
+                <div class="bg-white p-3 rounded border shadow-sm text-sm relative">
+                    <p class="font-bold text-gray-800 pr-6">Q${i+1}: ${q.question}</p>
+                    <p class="text-gray-500 mt-1">Ans: <span class="font-bold text-green-600">${q.correct_answers.join(', ')}</span></p>
+                    <button onclick="removeQuestion(${i})" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 font-bold">&times;</button>
+                </div>
+            `).join('');
+        }
+
+        function removeQuestion(index) {
+            currentQuizQuestions.splice(index, 1);
+            renderQuestionList();
+        }
+
+        async function saveFinalQuiz() {
+            const title = document.getElementById('new-quiz-title').value.trim();
+            if (!title) return alert("Quiz needs a title.");
+            if (currentQuizQuestions.length === 0) return alert("Add at least one question.");
+
+            try {
+                await fetch('/api/quizzes/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ course_id: courseId, title: title, questions: currentQuizQuestions })
+                });
+                closeQuizBuilder();
+                loadQuizzes();
+            } catch (err) { alert("Failed to save quiz."); }
         }
 
         async function deleteQuiz(id) {
-            if(!confirm("Are you sure you want to permanently delete this quiz and all student scores?")) return;
-            await fetch(`/api/quizzes/${id}`, { method: 'DELETE' });
-            loadQuizzes();
-        }
-
-        function addQuestionBlock(existingData = null) {
-            questionCounter++;
-            const id = questionCounter;
-            const container = document.getElementById('questions-container');
-
-            const qText = existingData ? existingData.question : '';
-            const oA = existingData ? existingData.options.A : '';
-            const oB = existingData ? existingData.options.B : '';
-            const oC = existingData ? existingData.options.C : '';
-            const oD = existingData ? existingData.options.D : '';
-            const corrects = existingData ? existingData.correct_answers : [];
-
-            const isChecked = (val) => corrects.includes(val) ? 'checked' : '';
-
-            const block = document.createElement('div');
-            block.className = 'question-block bg-gray-50 p-5 rounded-lg border border-gray-200 relative';
-            block.id = `qb-${id}`;
-            block.innerHTML = `
-                <button type="button" onclick="this.parentElement.remove()" class="absolute top-4 right-4 text-red-500 text-sm font-bold hover:underline">Remove</button>
-                <h3 class="font-bold text-gray-700 mb-3 border-b pb-2">Question</h3>
-                <textarea class="q-text w-full px-4 py-2 mb-3 border rounded-lg" rows="2" placeholder="Enter question..." required>${qText}</textarea>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                    <div class="flex items-center bg-white border rounded-lg"><span class="bg-gray-100 px-3 py-2 font-bold border-r">A</span><input type="text" class="q-optA w-full px-3 py-2 outline-none" value="${oA}" required></div>
-                    <div class="flex items-center bg-white border rounded-lg"><span class="bg-gray-100 px-3 py-2 font-bold border-r">B</span><input type="text" class="q-optB w-full px-3 py-2 outline-none" value="${oB}" required></div>
-                    <div class="flex items-center bg-white border rounded-lg"><span class="bg-gray-100 px-3 py-2 font-bold border-r">C</span><input type="text" class="q-optC w-full px-3 py-2 outline-none" value="${oC}" required></div>
-                    <div class="flex items-center bg-white border rounded-lg"><span class="bg-gray-100 px-3 py-2 font-bold border-r">D</span><input type="text" class="q-optD w-full px-3 py-2 outline-none" value="${oD}" required></div>
-                </div>
-
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Select Correct Answer(s):</label>
-                <div class="flex gap-4">
-                    <label class="flex items-center space-x-2 bg-white px-3 py-2 border rounded hover:bg-green-50"><input type="checkbox" value="A" class="q-correct w-4 h-4 text-green-600" ${isChecked('A')}><span class="font-medium">A</span></label>
-                    <label class="flex items-center space-x-2 bg-white px-3 py-2 border rounded hover:bg-green-50"><input type="checkbox" value="B" class="q-correct w-4 h-4 text-green-600" ${isChecked('B')}><span class="font-medium">B</span></label>
-                    <label class="flex items-center space-x-2 bg-white px-3 py-2 border rounded hover:bg-green-50"><input type="checkbox" value="C" class="q-correct w-4 h-4 text-green-600" ${isChecked('C')}><span class="font-medium">C</span></label>
-                    <label class="flex items-center space-x-2 bg-white px-3 py-2 border rounded hover:bg-green-50"><input type="checkbox" value="D" class="q-correct w-4 h-4 text-green-600" ${isChecked('D')}><span class="font-medium">D</span></label>
-                </div>
-            `;
-            container.appendChild(block);
-        }
-
-        function openQuizModal(quizId = null) {
-            document.getElementById('questions-container').innerHTML = ''; 
-            
-            if (quizId) {
-                const quiz = currentQuizzes.find(q => q.id === quizId);
-                document.getElementById('modal-title').textContent = 'Edit Quiz';
-                document.getElementById('edit-quiz-id').value = quizId;
-                document.getElementById('quiz-title').value = quiz.title;
-                quiz.questions.forEach(qData => addQuestionBlock(qData));
-            } else {
-                document.getElementById('modal-title').textContent = 'Create New Quiz';
-                document.getElementById('edit-quiz-id').value = '';
-                document.getElementById('quiz-title').value = '';
-                addQuestionBlock(); 
-            }
-
-            document.getElementById('quiz-modal').classList.remove('hidden');
-            document.getElementById('quiz-modal').classList.add('flex');
-        }
-
-        function closeQuizModal() {
-            document.getElementById('quiz-modal').classList.add('hidden');
-            document.getElementById('quiz-modal').classList.remove('flex');
-        }
-
-        document.getElementById('quiz-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const blocks = document.querySelectorAll('.question-block');
-            if (blocks.length === 0) return alert("You must add at least one question!");
-
-            const questions = [];
-            let isValid = true;
-
-            blocks.forEach(block => {
-                const qText = block.querySelector('.q-text').value;
-                const optA = block.querySelector('.q-optA').value;
-                const optB = block.querySelector('.q-optB').value;
-                const optC = block.querySelector('.q-optC').value;
-                const optD = block.querySelector('.q-optD').value;
-                const checked = Array.from(block.querySelectorAll('.q-correct:checked')).map(cb => cb.value);
-
-                if (checked.length === 0) {
-                    alert(`Missing correct answer selection on a question!`);
-                    isValid = false;
-                    return;
-                }
-
-                questions.push({
-                    question: qText,
-                    options: { A: optA, B: optB, C: optC, D: optD },
-                    correct_answers: checked
-                });
-            });
-
-            if (!isValid) return;
-
-            const btn = document.getElementById('save-quiz-btn'); btn.textContent = 'Saving...'; btn.disabled = true;
-            
-            const quizId = document.getElementById('edit-quiz-id').value;
-            const payload = {
-                course_id: courseId,
-                title: document.getElementById('quiz-title').value,
-                questions: questions
-            };
-
+            if (!confirm("Delete this quiz completely? Results will be lost.")) return;
             try {
-                const url = quizId ? `/api/quizzes/${quizId}` : `/api/quizzes/create`;
-                const method = quizId ? 'PUT' : 'POST';
+                await fetch(`/api/quizzes/${id}`, { method: 'DELETE' });
+                loadQuizzes();
+            } catch(e) { alert("Error deleting quiz."); }
+        }
 
-                const res = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if (res.ok) {
-                    closeQuizModal();
-                    loadQuizzes();
-                } else { alert("Failed to save quiz."); }
-            } catch(err) { alert("Network error."); }
-            finally { btn.textContent = 'Save Quiz'; btn.disabled = false; }
-        });
-
-        async function viewResults(quizId) {
-            const tbody = document.getElementById('results-table-body');
-            tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-gray-500">Loading results...</td></tr>';
-            document.getElementById('results-modal').classList.remove('hidden');
-            document.getElementById('results-modal').classList.add('flex');
-
+        // Quiz Results
+        async function viewQuizResults(quizId) {
             try {
                 const res = await fetch(`/api/quizzes/${quizId}/results`);
                 const results = await res.json();
                 
-                if (results.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-gray-500">No students have taken this quiz yet.</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = '';
-                results.forEach(r => {
-                    const date = new Date(r.submitted_at).toLocaleString();
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-gray-50">
-                            <td class="p-3 font-bold text-gray-800">${r.name}</td>
-                            <td class="p-3 text-gray-500 font-mono text-sm">${r.roll_number}</td>
-                            <td class="p-3 text-right"><span class="bg-green-100 text-green-800 px-2 py-1 rounded font-bold">${r.score}%</span></td>
-                            <td class="p-3 text-right text-gray-500 text-sm">${date}</td>
+                const tbody = document.getElementById('quiz-results-tbody');
+                tbody.innerHTML = results.length === 0 
+                    ? `<tr><td colspan="4" class="p-6 text-center text-gray-500 italic">No students have taken this quiz yet.</td></tr>`
+                    : results.map(r => `
+                        <tr class="hover:bg-gray-50 border-b">
+                            <td class="p-3 font-medium">${r.roll_number || 'N/A'}</td>
+                            <td class="p-3">${r.name}</td>
+                            <td class="p-3 font-bold ${r.score >= 50 ? 'text-green-600' : 'text-red-600'}">${r.score}%</td>
+                            <td class="p-3 text-gray-500 text-xs">${new Date(r.submitted_at).toLocaleString()}</td>
                         </tr>
-                    `;
-                });
-            } catch(e) { tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-red-500">Failed to load results.</td></tr>'; }
+                    `).join('');
+
+                const modal = document.getElementById('quiz-results-modal');
+                modal.classList.remove('hidden'); modal.classList.add('flex');
+            } catch(e) { alert("Error loading results."); }
         }
 
         function closeResultsModal() {
-            document.getElementById('results-modal').classList.add('hidden');
-            document.getElementById('results-modal').classList.remove('flex');
+            const modal = document.getElementById('quiz-results-modal');
+            modal.classList.add('hidden'); modal.classList.remove('flex');
         }
 
-        document.addEventListener('DOMContentLoaded', loadCourseData);
+        // ==========================================
+        // 3. ASSIGNMENTS LOGIC (WITH INDEX BUG FIX)
+        // ==========================================
+        let currentCourseAssignments = []; // Store data safely in memory
+
+        async function loadAssignments() {
+            try {
+                const res = await fetch(`/api/teacher/courses/${courseId}/assignments`);
+                currentCourseAssignments = await res.json();
+                
+                const list = document.getElementById('assignments-list');
+                list.innerHTML = '';
+
+                if(currentCourseAssignments.length === 0) return list.innerHTML = '<div class="p-8 text-gray-500 text-center italic">No assignments posted yet.</div>';
+
+                currentCourseAssignments.forEach((a, aIndex) => {
+                    let submissionsHtml = '';
+                    
+                    if (a.submissions && a.submissions.length > 0) {
+                        submissionsHtml = a.submissions.map((sub, sIndex) => `
+                            <tr class="border-b last:border-0 hover:bg-blue-50">
+                                <td class="p-3 font-medium">${sub.student_name}</td>
+                                <td class="p-3 text-gray-500">${new Date(sub.submitted_at).toLocaleString()}</td>
+                                <td class="p-3 font-bold ${sub.marks_awarded !== null ? 'text-green-600' : 'text-orange-500'}">
+                                    ${sub.marks_awarded !== null ? `${sub.marks_awarded} / ${a.max_marks}` : 'Needs Grading'}
+                                </td>
+                                <td class="p-3 text-right">
+                                    <button onclick="openGradeModal(${aIndex}, ${sIndex})" class="bg-blue-100 text-blue-700 px-3 py-1 rounded font-bold hover:bg-blue-200">Grade</button>
+                                </td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        submissionsHtml = `<tr><td colspan="4" class="p-4 text-center text-gray-400 italic">No submissions yet</td></tr>`;
+                    }
+
+                    list.innerHTML += `
+                        <div class="p-6 hover:bg-gray-50 transition">
+                            <div class="mb-4">
+                                <h3 class="font-bold text-gray-800 text-lg">${a.title}</h3>
+                                <p class="text-sm text-gray-500">Due: ${new Date(a.due_date).toLocaleString()} | Max Marks: ${a.max_marks}</p>
+                            </div>
+                            <div class="bg-white border rounded-lg overflow-hidden shadow-sm">
+                                <table class="w-full text-left text-sm">
+                                    <thead class="bg-gray-100 border-b">
+                                        <tr>
+                                            <th class="p-3 font-bold text-gray-600">Student Name</th>
+                                            <th class="p-3 font-bold text-gray-600">Submitted At</th>
+                                            <th class="p-3 font-bold text-gray-600">Status</th>
+                                            <th class="p-3 font-bold text-gray-600 text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${submissionsHtml}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        // Post Assignment
+        document.getElementById('create-assignment-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                title: document.getElementById('assign-title').value,
+                description: document.getElementById('assign-desc').value,
+                max_marks: document.getElementById('assign-marks').value,
+                due_date: document.getElementById('assign-due').value
+            };
+
+            try {
+                await fetch(`/api/teacher/courses/${courseId}/assignments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                alert('Assignment Posted Successfully!');
+                e.target.reset();
+                loadAssignments();
+            } catch (err) { alert('Error posting assignment.'); }
+        });
+
+        // Grading Modals - Safely pull text from memory based on index
+        function openGradeModal(aIndex, sIndex) {
+            const assignment = currentCourseAssignments[aIndex];
+            const submission = assignment.submissions[sIndex];
+
+            document.getElementById('submission-id').value = submission.id;
+            document.getElementById('student-answer-text').textContent = submission.answer_text;
+            document.getElementById('max-marks-display').value = assignment.max_marks;
+            document.getElementById('marks-awarded').value = submission.marks_awarded !== null ? submission.marks_awarded : '';
+            document.getElementById('teacher-feedback').value = submission.teacher_feedback || '';
+            
+            const modal = document.getElementById('grade-modal');
+            modal.classList.remove('hidden'); 
+            modal.classList.add('flex');
+        }
+
+        function closeGradeModal() {
+            const modal = document.getElementById('grade-modal');
+            modal.classList.add('hidden'); 
+            modal.classList.remove('flex');
+        }
+
+        // Submit Grade
+        document.getElementById('grade-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const subId = document.getElementById('submission-id').value;
+            const data = {
+                marks_awarded: document.getElementById('marks-awarded').value,
+                feedback: document.getElementById('teacher-feedback').value
+            };
+
+            try {
+                await fetch(`/api/teacher/assignments/grade/${subId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                closeGradeModal();
+                loadAssignments(); // Refresh list to show green "Graded" status
+            } catch (err) { alert('Error saving grade.'); }
+        });
+
     </script>
 </body>
 </html>
