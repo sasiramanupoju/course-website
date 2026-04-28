@@ -8,215 +8,328 @@
     <style>
         .hidden { display: none !important; }
         .flex { display: flex !important; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f8fafc; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body class="bg-gray-50 flex h-screen overflow-hidden">
+<body class="bg-slate-50 flex h-screen overflow-hidden text-slate-800 font-sans">
 
-    <div id="quiz-builder-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col">
-            <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
-                <h2 class="text-xl font-bold text-gray-800">Quiz Builder</h2>
-                <button onclick="closeQuizBuilder()" class="text-gray-400 hover:text-red-500 font-bold text-2xl">&times;</button>
+    <div id="quiz-builder-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden">
+            <div class="px-8 py-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Quiz Builder</h2>
+                    <p class="text-sm text-slate-500">Create a new multiple-choice quiz.</p>
+                </div>
+                <button onclick="closeQuizBuilder()" class="text-slate-400 hover:text-red-500 bg-white hover:bg-red-50 p-2 rounded-lg transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
             </div>
             
-            <div class="p-6 overflow-y-auto flex-1 flex gap-6">
-                <div class="w-1/2 flex flex-col gap-4 border-r pr-6">
+            <div class="p-8 overflow-y-auto flex-1 flex flex-col lg:flex-row gap-8 bg-slate-50/50">
+                <div class="w-full lg:w-1/2 flex flex-col gap-6 lg:border-r border-slate-200 lg:pr-8">
                     <div>
-                        <label class="block text-sm font-bold text-gray-700">Quiz Title</label>
-                        <input type="text" id="new-quiz-title" class="w-full border rounded p-2 focus:ring-blue-500" placeholder="e.g., Midterm Exam">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Quiz Title</label>
+                        <input type="text" id="new-quiz-title" class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-white" placeholder="e.g., Midterm Examination">
                     </div>
-                    <div class="border-t pt-4 mt-2">
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Add a Question</label>
-                        <textarea id="qb-question" class="w-full border rounded p-2 mb-2 focus:ring-blue-500" rows="2" placeholder="Question text..."></textarea>
-                        <div class="space-y-2 mb-3 text-sm">
-                            <input type="text" id="qb-opt-a" class="w-full border rounded p-1" placeholder="Option A">
-                            <input type="text" id="qb-opt-b" class="w-full border rounded p-1" placeholder="Option B">
-                            <input type="text" id="qb-opt-c" class="w-full border rounded p-1" placeholder="Option C">
-                            <input type="text" id="qb-opt-d" class="w-full border rounded p-1" placeholder="Option D">
+                    <div class="bg-white p-5 border border-slate-200 rounded-xl shadow-sm">
+                        <label class="block text-sm font-bold text-slate-700 mb-3 flex items-center">
+                            <svg class="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>Add a Question
+                        </label>
+                        <textarea id="qb-question" class="w-full border border-slate-300 rounded-xl p-4 mb-4 focus:ring-2 focus:ring-blue-500 outline-none resize-none bg-slate-50" rows="3" placeholder="Type the question text here..."></textarea>
+                        
+                        <div class="grid grid-cols-2 gap-3 mb-5">
+                            <div class="flex items-center border border-slate-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+                                <span class="bg-slate-100 px-3 py-2 text-slate-500 font-bold border-r border-slate-300">A</span>
+                                <input type="text" id="qb-opt-a" class="w-full p-2 outline-none" placeholder="Option A">
+                            </div>
+                            <div class="flex items-center border border-slate-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+                                <span class="bg-slate-100 px-3 py-2 text-slate-500 font-bold border-r border-slate-300">B</span>
+                                <input type="text" id="qb-opt-b" class="w-full p-2 outline-none" placeholder="Option B">
+                            </div>
+                            <div class="flex items-center border border-slate-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+                                <span class="bg-slate-100 px-3 py-2 text-slate-500 font-bold border-r border-slate-300">C</span>
+                                <input type="text" id="qb-opt-c" class="w-full p-2 outline-none" placeholder="Option C">
+                            </div>
+                            <div class="flex items-center border border-slate-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+                                <span class="bg-slate-100 px-3 py-2 text-slate-500 font-bold border-r border-slate-300">D</span>
+                                <input type="text" id="qb-opt-d" class="w-full p-2 outline-none" placeholder="Option D">
+                            </div>
                         </div>
-                        <label class="block text-sm font-bold text-gray-700 mb-1">Correct Answer(s)</label>
-                        <div class="flex gap-4 mb-4">
-                            <label><input type="checkbox" name="qb-correct" value="A"> A</label>
-                            <label><input type="checkbox" name="qb-correct" value="B"> B</label>
-                            <label><input type="checkbox" name="qb-correct" value="C"> C</label>
-                            <label><input type="checkbox" name="qb-correct" value="D"> D</label>
+
+                        <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-3 mb-4">
+                            <label class="block text-sm font-bold text-emerald-800 mb-2">Select Correct Answer(s)</label>
+                            <div class="flex gap-4">
+                                <label class="flex items-center gap-2 cursor-pointer font-semibold text-emerald-700"><input type="checkbox" name="qb-correct" value="A" class="w-4 h-4 text-emerald-600 rounded"> A</label>
+                                <label class="flex items-center gap-2 cursor-pointer font-semibold text-emerald-700"><input type="checkbox" name="qb-correct" value="B" class="w-4 h-4 text-emerald-600 rounded"> B</label>
+                                <label class="flex items-center gap-2 cursor-pointer font-semibold text-emerald-700"><input type="checkbox" name="qb-correct" value="C" class="w-4 h-4 text-emerald-600 rounded"> C</label>
+                                <label class="flex items-center gap-2 cursor-pointer font-semibold text-emerald-700"><input type="checkbox" name="qb-correct" value="D" class="w-4 h-4 text-emerald-600 rounded"> D</label>
+                            </div>
                         </div>
-                        <button onclick="addQuestionToQuiz()" class="w-full bg-gray-800 text-white font-bold py-2 rounded hover:bg-gray-900">+ Add Question</button>
+                        <button onclick="addQuestionToQuiz()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl hover:bg-slate-900 transition-colors shadow-sm">Save Question to List</button>
                     </div>
                 </div>
 
-                <div class="w-1/2 flex flex-col">
-                    <h3 class="font-bold text-gray-700 mb-2">Questions in this Quiz (<span id="qb-count">0</span>)</h3>
-                    <div id="qb-question-list" class="flex-1 overflow-y-auto space-y-3 bg-gray-50 p-3 rounded border">
-                        <p class="text-sm text-gray-400 italic">No questions added yet.</p>
+                <div class="w-full lg:w-1/2 flex flex-col h-full">
+                    <h3 class="font-bold text-slate-700 mb-3 flex justify-between items-center">
+                        Questions Added <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs" id="qb-count">0</span>
+                    </h3>
+                    <div id="qb-question-list" class="flex-1 overflow-y-auto space-y-3 bg-white p-4 rounded-xl border border-slate-200 shadow-inner">
+                        <div class="h-full flex items-center justify-center text-slate-400 italic text-sm">No questions added yet.</div>
                     </div>
                 </div>
             </div>
-            
-            <div class="p-4 border-t bg-gray-50 rounded-b-xl flex justify-end gap-3 shrink-0">
-                <button onclick="closeQuizBuilder()" class="px-6 py-2 bg-white border text-gray-700 font-bold rounded">Cancel</button>
-                <button onclick="saveFinalQuiz()" class="px-6 py-2 bg-blue-600 text-white font-bold rounded hover:bg-blue-700">Save Quiz & Publish</button>
+            <div class="p-6 border-t border-slate-200 bg-white flex justify-end gap-4 shrink-0">
+                <button onclick="closeQuizBuilder()" class="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors">Cancel</button>
+                <button onclick="saveFinalQuiz()" class="px-8 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-sm transition-colors flex items-center">Publish Quiz</button>
             </div>
         </div>
     </div>
 
-    <div id="quiz-results-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[80vh] flex flex-col overflow-hidden">
-            <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
-                <h2 class="text-xl font-bold text-gray-800">Quiz Results</h2>
-                <button onclick="closeResultsModal()" class="text-gray-400 hover:text-red-500 font-bold text-2xl">&times;</button>
+    <div id="quiz-results-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[80vh] flex flex-col overflow-hidden">
+            <div class="px-8 py-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Quiz Submissions</h2>
+                </div>
+                <button onclick="closeResultsModal()" class="text-slate-400 hover:text-red-500 bg-white hover:bg-red-50 p-2 rounded-lg transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
             </div>
             <div class="p-6 overflow-y-auto flex-1">
-                <table class="w-full text-left text-sm border">
-                    <thead class="bg-gray-100 border-b">
-                        <tr>
-                            <th class="p-3 font-bold text-gray-600">Roll Number</th>
-                            <th class="p-3 font-bold text-gray-600">Student Name</th>
-                            <th class="p-3 font-bold text-gray-600">Score</th>
-                            <th class="p-3 font-bold text-gray-600">Submitted At</th>
-                        </tr>
-                    </thead>
-                    <tbody id="quiz-results-tbody">
-                        </tbody>
-                </table>
+                <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                    <table class="w-full text-left text-sm bg-white">
+                        <thead class="bg-slate-50 border-b border-slate-200">
+                            <tr>
+                                <th class="p-4 font-bold text-slate-600 uppercase tracking-wider text-xs">Roll Number</th>
+                                <th class="p-4 font-bold text-slate-600 uppercase tracking-wider text-xs">Student Name</th>
+                                <th class="p-4 font-bold text-slate-600 uppercase tracking-wider text-xs text-center">Score</th>
+                                <th class="p-4 font-bold text-slate-600 uppercase tracking-wider text-xs text-right">Submitted At</th>
+                            </tr>
+                        </thead>
+                        <tbody id="quiz-results-tbody" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="grade-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl p-6 flex flex-col max-h-[90vh]">
-            <div class="flex justify-between items-center mb-4 border-b pb-2 shrink-0">
-                <h2 class="text-xl font-bold text-gray-800">Grade Submission</h2>
-                <button onclick="closeGradeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+    <div id="edit-assignment-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden">
+            <div class="px-8 py-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Edit Assignment</h2>
+                    <p class="text-sm text-slate-500">Update the assignment details.</p>
+                </div>
+                <button onclick="closeEditAssignmentModal()" class="text-slate-400 hover:text-red-500 bg-white hover:bg-red-50 p-2 rounded-lg transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
             </div>
-            <div class="mb-4 overflow-y-auto flex-1">
-                <p class="text-sm text-gray-500 font-bold">Student Answer:</p>
-                <div id="student-answer-text" class="bg-gray-50 p-4 rounded border mt-1 text-gray-700 whitespace-pre-wrap font-medium"></div>
-            </div>
-            <form id="grade-form" class="space-y-4 shrink-0 border-t pt-4">
-                <input type="hidden" id="submission-id">
-                <div class="flex gap-4">
-                    <div class="w-1/3">
-                        <label class="block text-sm font-bold text-gray-700 mb-1">Marks Awarded</label>
-                        <input type="number" id="marks-awarded" class="w-full border border-gray-300 rounded p-2 focus:ring-blue-500" required>
-                    </div>
-                    <div class="w-2/3">
-                        <label class="block text-sm font-bold text-gray-700 mb-1">Max Marks</label>
-                        <input type="text" id="max-marks-display" class="w-full border border-gray-300 rounded p-2 bg-gray-100" disabled>
-                    </div>
+            <form id="edit-assignment-form" class="p-8 space-y-6">
+                <input type="hidden" id="edit-assign-id">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">Assignment Title</label>
+                    <input type="text" id="edit-assign-title" class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Feedback (Optional)</label>
-                    <textarea id="teacher-feedback" class="w-full border border-gray-300 rounded p-2 focus:ring-blue-500" rows="3"></textarea>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">Instructions / Description</label>
+                    <textarea id="edit-assign-desc" class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none resize-none" rows="4" required></textarea>
                 </div>
-                <div class="flex justify-end">
-                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700 shadow">Submit Grade</button>
+                <div class="flex flex-col sm:flex-row gap-6">
+                    <div class="w-full sm:w-1/2">
+                        <label class="block text-sm font-bold text-slate-700 mb-1">Maximum Marks</label>
+                        <input type="number" id="edit-assign-marks" class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50" required>
+                    </div>
+                    <div class="w-full sm:w-1/2">
+                        <label class="block text-sm font-bold text-slate-700 mb-1">Due Date & Time</label>
+                        <input type="datetime-local" id="edit-assign-due" class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50" required>
+                    </div>
+                </div>
+                <div class="pt-4 flex justify-end gap-3">
+                    <button type="button" onclick="closeEditAssignmentModal()" class="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors">Cancel</button>
+                    <button type="submit" class="bg-blue-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-blue-700 shadow-sm transition-colors">Save Changes</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <div id="assignment-submissions-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[80vh] flex flex-col overflow-hidden">
+            <div class="px-8 py-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800" id="assign-sub-modal-title">Assignment Submissions</h2>
+                    <p class="text-sm text-slate-500">Grade student work and provide feedback.</p>
+                </div>
+                <button onclick="closeAssignmentSubmissionsModal()" class="text-slate-400 hover:text-red-500 bg-white hover:bg-red-50 p-2 rounded-lg transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1">
+                <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                    <table class="w-full text-left text-sm bg-white">
+                        <thead class="bg-slate-50 border-b border-slate-200">
+                            <tr>
+                                <th class="p-4 font-bold text-slate-600 uppercase tracking-wider text-xs">Student</th>
+                                <th class="p-4 font-bold text-slate-600 uppercase tracking-wider text-xs">Submitted At</th>
+                                <th class="p-4 font-bold text-slate-600 uppercase tracking-wider text-xs">Status</th>
+                                <th class="p-4 font-bold text-slate-600 uppercase tracking-wider text-xs text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="assignment-submissions-tbody" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="grade-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[60] p-4 transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8 flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4 shrink-0">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Evaluate Submission</h2>
+                </div>
+                <button onclick="closeGradeModal()" class="text-slate-400 hover:text-red-500 bg-slate-50 hover:bg-red-50 p-2 rounded-lg transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="mb-6 overflow-y-auto flex-1">
+                <label class="block text-sm font-bold text-slate-700 mb-2">Student's Work:</label>
+                <div id="student-answer-text" class="bg-slate-50 p-5 rounded-xl border border-slate-200 text-slate-700 whitespace-pre-wrap font-medium shadow-inner min-h-[100px]"></div>
+            </div>
+            <form id="grade-form" class="space-y-5 shrink-0 border-t border-slate-200 pt-6">
+                <input type="hidden" id="submission-id">
+                <div class="flex gap-6">
+                    <div class="w-1/2">
+                        <label class="block text-sm font-bold text-slate-700 mb-1">Marks Awarded</label>
+                        <input type="number" id="marks-awarded" class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none text-lg font-bold text-blue-600" required>
+                    </div>
+                    <div class="w-1/2">
+                        <label class="block text-sm font-bold text-slate-700 mb-1">Maximum Marks</label>
+                        <input type="text" id="max-marks-display" class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-100 text-slate-500 font-bold" disabled>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">Teacher Feedback (Optional)</label>
+                    <textarea id="teacher-feedback" class="w-full border border-slate-300 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 outline-none" rows="3"></textarea>
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeGradeModal()" class="px-6 py-3 text-slate-600 font-bold bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">Cancel</button>
+                    <button type="submit" class="bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-emerald-700 shadow-sm transition-colors">Save Grade</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <main class="flex-1 flex flex-col h-screen overflow-y-auto w-full">
-        <header class="bg-white shadow-sm px-6 py-4 flex items-center justify-between sticky top-0 z-40">
+        <header class="bg-white border-b border-slate-200 px-8 py-5 flex items-center justify-between sticky top-0 z-40 shadow-sm">
             <div class="flex items-center gap-4">
-                <button onclick="window.location.href='/teacher-dashboard.html'" class="text-gray-500 hover:text-blue-600 transition font-bold">&larr; Dashboard</button>
-                <h1 class="text-xl font-bold text-gray-800" id="course-title-header">Loading Course...</h1>
+                <button onclick="window.location.href='/teacher-dashboard.html'" class="flex items-center text-slate-500 hover:text-blue-600 transition font-bold bg-slate-50 hover:bg-blue-50 px-4 py-2 rounded-lg border border-slate-200">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Back
+                </button>
+                <div class="h-6 w-px bg-slate-300 mx-2"></div>
+                <h1 class="text-2xl font-bold text-slate-800 tracking-tight" id="course-title-header">Loading Course Details...</h1>
             </div>
         </header>
 
-        <div class="p-6 space-y-6 max-w-6xl mx-auto w-full mt-4">
+        <div class="p-8 max-w-7xl mx-auto w-full">
             
-            <div class="border-b border-gray-200">
-                <nav class="-mb-px flex space-x-8">
-                    <button onclick="switchTab('materials')" id="tab-materials" class="border-blue-500 text-blue-600 py-4 border-b-2 font-bold text-sm transition">Materials</button>
-                    <button onclick="switchTab('quizzes')" id="tab-quizzes" class="border-transparent text-gray-500 hover:text-gray-700 py-4 border-b-2 font-bold text-sm transition">Quizzes</button>
-                    <button onclick="switchTab('assignments')" id="tab-assignments" class="border-transparent text-gray-500 hover:text-gray-700 py-4 border-b-2 font-bold text-sm transition">Assignments</button>
+            <div class="mb-8">
+                <nav class="flex space-x-2 border-b border-slate-200">
+                    <button onclick="switchTab('materials')" id="tab-materials" class="border-blue-600 text-blue-600 px-6 py-4 border-b-2 font-bold text-sm transition-all bg-blue-50/50 rounded-t-lg">Course Materials</button>
+                    <button onclick="switchTab('quizzes')" id="tab-quizzes" class="border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50 px-6 py-4 border-b-2 font-bold text-sm transition-all rounded-t-lg">Quizzes</button>
+                    <button onclick="switchTab('assignments')" id="tab-assignments" class="border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50 px-6 py-4 border-b-2 font-bold text-sm transition-all rounded-t-lg">Assignments</button>
                 </nav>
             </div>
 
-            <div id="section-materials" class="block space-y-6">
-                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                    <h2 class="font-bold text-lg mb-4">Upload New Material</h2>
-                    <form id="upload-content-form" class="flex flex-col sm:flex-row gap-4 items-end">
-                        <div class="w-full sm:w-1/3">
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Title</label>
-                            <input type="text" id="content-title" class="w-full border rounded p-2 focus:ring-blue-500" required>
+            <div id="section-materials" class="block space-y-8">
+                <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-col lg:flex-row gap-8 items-center">
+                    <div class="lg:w-1/3">
+                        <h2 class="font-bold text-xl text-slate-800">Upload Content</h2>
+                    </div>
+                    <form id="upload-content-form" class="w-full lg:w-2/3 flex flex-col sm:flex-row gap-4 items-end">
+                        <div class="w-full sm:w-2/5">
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Title</label>
+                            <input type="text" id="content-title" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none" required>
                         </div>
                         <div class="w-full sm:w-1/4">
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Type</label>
-                            <select id="content-type" class="w-full border rounded p-2 focus:ring-blue-500" required>
-                                <option value="notes">Notes (PDF/Word)</option>
-                                <option value="ppt">Presentation (PPT)</option>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Format</label>
+                            <select id="content-type" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none" required>
+                                <option value="notes">Notes/Doc</option>
+                                <option value="ppt">Presentation</option>
                             </select>
                         </div>
-                        <div class="w-full sm:w-1/3">
-                            <label class="block text-sm font-bold text-gray-700 mb-1">File</label>
-                            <input type="file" id="content-file" accept=".pdf,.doc,.docx,.ppt,.pptx" class="w-full border rounded p-1.5" required>
+                        <div class="w-full sm:w-auto flex-1">
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Select File</label>
+                            <input type="file" id="content-file" accept=".pdf,.doc,.docx,.ppt,.pptx" class="w-full border border-slate-300 rounded-xl px-3 py-2 bg-slate-50" required>
                         </div>
-                        <button type="submit" id="upload-btn" class="w-full sm:w-auto bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700 whitespace-nowrap">Upload</button>
+                        <button type="submit" id="upload-btn" class="w-full sm:w-auto bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-blue-700 whitespace-nowrap shadow-sm transition-colors">Upload</button>
                     </form>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <table class="w-full text-left text-sm">
-                        <thead class="bg-gray-50 border-b">
+                        <thead class="bg-slate-50 border-b border-slate-200">
                             <tr>
-                                <th class="p-4 font-bold text-gray-600">Title</th>
-                                <th class="p-4 font-bold text-gray-600 text-center">Type</th>
-                                <th class="p-4 font-bold text-gray-600">Date Uploaded</th>
-                                <th class="p-4 font-bold text-gray-600 text-right">Actions</th>
+                                <th class="p-5 font-bold text-slate-600 uppercase tracking-wider text-xs">Document Title</th>
+                                <th class="p-5 font-bold text-slate-600 uppercase tracking-wider text-xs text-center">Type</th>
+                                <th class="p-5 font-bold text-slate-600 uppercase tracking-wider text-xs">Date Uploaded</th>
+                                <th class="p-5 font-bold text-slate-600 uppercase tracking-wider text-xs text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="materials-list" class="divide-y divide-gray-100">
-                            <tr><td colspan="4" class="p-6 text-center text-gray-500">Loading...</td></tr>
-                        </tbody>
+                        <tbody id="materials-list" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
             </div>
 
             <div id="section-quizzes" class="hidden space-y-6">
-                
-                <div class="flex justify-between items-center">
-                    <h2 class="text-xl font-bold text-gray-800">Course Quizzes</h2>
-                    <button onclick="openQuizBuilder()" class="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700 shadow-sm">+ Create New Quiz</button>
+                <div class="flex justify-between items-center bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <h2 class="text-xl font-bold text-slate-800">Active Quizzes</h2>
+                    <button onclick="openQuizBuilder()" class="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-blue-700 shadow-sm transition-colors flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg> Create New Quiz
+                    </button>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="quizzes-list">
-                    </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="quizzes-list"></div>
             </div>
 
-            <div id="section-assignments" class="hidden space-y-6">
+            <div id="section-assignments" class="hidden space-y-8">
                 
-                <div class="bg-white p-6 rounded-xl border shadow-sm">
-                    <h2 class="font-bold text-lg mb-4">Post New Assignment</h2>
-                    <form id="create-assignment-form" class="space-y-4">
+                <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+                    <h2 class="font-bold text-xl text-slate-800 mb-6">Post New Assignment</h2>
+                    <form id="create-assignment-form" class="space-y-6">
                         <div>
-                            <label class="block text-sm font-bold text-gray-700">Assignment Title</label>
-                            <input type="text" id="assign-title" class="mt-1 w-full border border-gray-300 rounded p-2 focus:ring-blue-500" required>
+                            <label class="block text-sm font-bold text-slate-700 mb-1">Assignment Title</label>
+                            <input type="text" id="assign-title" class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Chapter 4 Essay" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700">Questions / Instructions</label>
-                            <textarea id="assign-desc" class="mt-1 w-full border border-gray-300 rounded p-2 focus:ring-blue-500" rows="3" required></textarea>
+                            <label class="block text-sm font-bold text-slate-700 mb-1">Instructions / Description</label>
+                            <textarea id="assign-desc" class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none resize-none" rows="4" placeholder="Provide detailed instructions..." required></textarea>
                         </div>
-                        <div class="flex gap-4">
-                            <div class="w-1/2">
-                                <label class="block text-sm font-bold text-gray-700">Max Marks</label>
-                                <input type="number" id="assign-marks" class="mt-1 w-full border border-gray-300 rounded p-2 focus:ring-blue-500" value="100" required>
+                        <div class="flex flex-col sm:flex-row gap-6">
+                            <div class="w-full sm:w-1/2">
+                                <label class="block text-sm font-bold text-slate-700 mb-1">Maximum Marks</label>
+                                <input type="number" id="assign-marks" class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50" value="100" required>
                             </div>
-                            <div class="w-1/2">
-                                <label class="block text-sm font-bold text-gray-700">Due Date & Time</label>
-                                <input type="datetime-local" id="assign-due" class="mt-1 w-full border border-gray-300 rounded p-2 focus:ring-blue-500" required>
+                            <div class="w-full sm:w-1/2">
+                                <label class="block text-sm font-bold text-slate-700 mb-1">Due Date & Time</label>
+                                <input type="datetime-local" id="assign-due" class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50" required>
                             </div>
                         </div>
-                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700">Post Assignment</button>
+                        <div class="pt-2 flex justify-end">
+                            <button type="submit" class="bg-slate-800 text-white px-8 py-3 rounded-xl font-bold hover:bg-slate-900 shadow-sm transition-colors flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                Post Assignment
+                            </button>
+                        </div>
                     </form>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-                    <h2 class="font-bold text-lg p-6 border-b bg-gray-50">Manage Submissions</h2>
-                    <div id="assignments-list" class="divide-y divide-gray-200">
-                        <div class="p-8 text-center text-gray-500">Loading assignments...</div>
+                <div>
+                    <h2 class="font-bold text-xl text-slate-800 mb-4">Manage Assignments</h2>
+                    <div id="assignments-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="p-10 text-center text-slate-500 bg-white rounded-2xl border border-slate-200 col-span-full">Loading assignments...</div>
                     </div>
                 </div>
 
@@ -235,13 +348,17 @@
             loadMaterials();
         });
 
-        // Tab Switcher
         function switchTab(tab) {
             ['materials', 'quizzes', 'assignments'].forEach(t => {
-                document.getElementById(`section-${t}`).classList.toggle('hidden', tab !== t);
-                document.getElementById(`tab-${t}`).className = tab === t 
-                    ? 'border-blue-500 text-blue-600 py-4 border-b-2 font-bold text-sm transition' 
-                    : 'border-transparent text-gray-500 hover:text-gray-700 py-4 border-b-2 font-bold text-sm transition';
+                const section = document.getElementById(`section-${t}`);
+                const btn = document.getElementById(`tab-${t}`);
+                if (tab === t) {
+                    section.classList.remove('hidden'); section.classList.add('block');
+                    btn.className = 'border-blue-600 text-blue-600 px-6 py-4 border-b-2 font-bold text-sm transition-all bg-blue-50/50 rounded-t-lg';
+                } else {
+                    section.classList.add('hidden'); section.classList.remove('block');
+                    btn.className = 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50 px-6 py-4 border-b-2 font-bold text-sm transition-all rounded-t-lg';
+                }
             });
             if (tab === 'materials') loadMaterials();
             if (tab === 'quizzes') loadQuizzes();
@@ -261,7 +378,7 @@
         }
 
         // ==========================================
-        // 1. MATERIALS LOGIC
+        // MATERIALS LOGIC
         // ==========================================
         async function loadMaterials() {
             const list = document.getElementById('materials-list');
@@ -269,33 +386,32 @@
                 const res = await fetch(`/api/content/course/${courseId}`);
                 const data = await res.json();
                 list.innerHTML = '';
-                
-                if (data.length === 0) {
-                    list.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500 italic">No materials uploaded yet.</td></tr>`;
-                    return;
-                }
+                if (data.length === 0) return list.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-500 italic">No materials uploaded yet.</td></tr>`;
 
                 data.forEach(item => {
+                    const typeBadge = item.type === 'ppt' ? 'bg-orange-100 text-orange-700 border-orange-200' : 'bg-blue-100 text-blue-700 border-blue-200';
                     list.innerHTML += `
-                        <tr class="hover:bg-gray-50">
-                            <td class="p-4 font-medium text-gray-800">${item.title}</td>
-                            <td class="p-4 text-center"><span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-bold uppercase">${item.type}</span></td>
-                            <td class="p-4 text-gray-500">${new Date(item.uploaded_at).toLocaleDateString()}</td>
-                            <td class="p-4 text-right">
-                                <a href="${item.file_url}" target="_blank" class="text-blue-600 font-bold hover:underline mr-3">View</a>
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="p-5 font-bold text-slate-700 flex items-center">
+                                <svg class="w-5 h-5 mr-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                                ${item.title}
+                            </td>
+                            <td class="p-5 text-center"><span class="px-3 py-1 border rounded-md text-xs font-bold uppercase ${typeBadge}">${item.type}</span></td>
+                            <td class="p-5 text-slate-500 font-medium">${new Date(item.uploaded_at).toLocaleDateString()}</td>
+                            <td class="p-5 text-right space-x-3">
+                                <a href="${item.file_url}" target="_blank" class="text-blue-600 font-bold hover:underline">View</a>
                                 <button onclick="deleteMaterial(${item.id})" class="text-red-500 font-bold hover:underline">Delete</button>
                             </td>
                         </tr>
                     `;
                 });
-            } catch (err) { list.innerHTML = `<tr><td colspan="4" class="p-4 text-red-500">Error loading materials.</td></tr>`; }
+            } catch (err) { list.innerHTML = `<tr><td colspan="4" class="p-8 text-red-500 text-center font-bold">Error loading materials.</td></tr>`; }
         }
 
         document.getElementById('upload-content-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('upload-btn');
             btn.textContent = 'Uploading...'; btn.disabled = true;
-
             const formData = new FormData();
             formData.append('course_id', courseId);
             formData.append('title', document.getElementById('content-title').value);
@@ -304,26 +420,18 @@
 
             try {
                 const res = await fetch('/api/content/upload', { method: 'POST', body: formData });
-                if (res.ok) {
-                    e.target.reset();
-                    loadMaterials();
-                } else {
-                    alert('Upload failed.');
-                }
+                if (res.ok) { e.target.reset(); loadMaterials(); } else { alert('Upload failed.'); }
             } catch (err) { alert('Network error during upload.'); }
             finally { btn.textContent = 'Upload'; btn.disabled = false; }
         });
 
         async function deleteMaterial(id) {
             if (!confirm('Are you sure you want to delete this material?')) return;
-            try {
-                await fetch(`/api/content/${id}`, { method: 'DELETE' });
-                loadMaterials();
-            } catch (err) { alert('Failed to delete material.'); }
+            try { await fetch(`/api/content/${id}`, { method: 'DELETE' }); loadMaterials(); } catch (err) { alert('Failed to delete material.'); }
         }
 
         // ==========================================
-        // 2. QUIZ LOGIC
+        // QUIZ LOGIC
         // ==========================================
         let currentQuizQuestions = [];
 
@@ -333,23 +441,21 @@
                 const res = await fetch(`/api/quizzes/course/${courseId}`);
                 const quizzes = await res.json();
                 list.innerHTML = '';
-                
-                if (quizzes.length === 0) {
-                    list.innerHTML = `<div class="col-span-full p-8 text-center text-gray-500 border border-dashed rounded-xl">No quizzes created yet.</div>`;
-                    return;
-                }
+                if (quizzes.length === 0) return list.innerHTML = `<div class="col-span-full p-12 text-center text-slate-500 border-2 border-dashed border-slate-200 rounded-2xl bg-white">No quizzes created yet. Get started by clicking "Create New Quiz".</div>`;
 
                 quizzes.forEach(q => {
                     let qCount = 0;
                     try { qCount = typeof q.questions === 'string' ? JSON.parse(q.questions).length : q.questions.length; } catch(e){}
-
                     list.innerHTML += `
-                        <div class="bg-white border rounded-xl p-5 shadow-sm hover:shadow transition flex flex-col">
-                            <h3 class="font-bold text-lg text-gray-800 mb-1">${q.title}</h3>
-                            <p class="text-sm text-gray-500 mb-4">${qCount} Questions • Created ${new Date(q.created_at).toLocaleDateString()}</p>
-                            <div class="mt-auto pt-4 border-t flex justify-between">
-                                <button onclick="viewQuizResults(${q.id})" class="text-blue-600 font-bold hover:underline text-sm">View Grades</button>
-                                <button onclick="deleteQuiz(${q.id})" class="text-red-500 font-bold hover:underline text-sm">Delete</button>
+                        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col group">
+                            <div class="flex-1 mb-4">
+                                <h3 class="font-bold text-lg text-slate-800 mb-2 group-hover:text-blue-600 transition-colors">${q.title}</h3>
+                                <p class="text-sm font-medium text-slate-500 bg-slate-50 inline-block px-3 py-1 rounded-lg border border-slate-100">${qCount} Questions</p>
+                                <p class="text-xs text-slate-400 mt-3 font-medium">Created: ${new Date(q.created_at).toLocaleDateString()}</p>
+                            </div>
+                            <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                                <button onclick="viewQuizResults(${q.id})" class="text-blue-600 font-bold hover:text-white hover:bg-blue-600 px-4 py-1.5 rounded-lg border border-blue-200 transition-colors text-sm">View Submissions</button>
+                                <button onclick="deleteQuiz(${q.id})" class="text-red-500 font-bold hover:text-white hover:bg-red-500 px-3 py-1.5 rounded-lg transition-colors text-sm">Delete</button>
                             </div>
                         </div>
                     `;
@@ -357,178 +463,133 @@
             } catch (err) { console.error(err); }
         }
 
-        // Quiz Builder
         function openQuizBuilder() {
             currentQuizQuestions = [];
             document.getElementById('new-quiz-title').value = '';
-            document.getElementById('qb-question-list').innerHTML = '<p class="text-sm text-gray-400 italic">No questions added yet.</p>';
+            document.getElementById('qb-question-list').innerHTML = '<div class="h-full flex items-center justify-center text-slate-400 italic text-sm">No questions added yet.</div>';
             document.getElementById('qb-count').textContent = '0';
             clearQuestionForm();
-            
-            const modal = document.getElementById('quiz-builder-modal');
-            modal.classList.remove('hidden'); modal.classList.add('flex');
+            document.getElementById('quiz-builder-modal').classList.remove('hidden'); document.getElementById('quiz-builder-modal').classList.add('flex');
         }
-
         function closeQuizBuilder() {
-            const modal = document.getElementById('quiz-builder-modal');
-            modal.classList.add('hidden'); modal.classList.remove('flex');
+            document.getElementById('quiz-builder-modal').classList.add('hidden'); document.getElementById('quiz-builder-modal').classList.remove('flex');
         }
-
         function clearQuestionForm() {
             document.getElementById('qb-question').value = '';
             ['a', 'b', 'c', 'd'].forEach(l => document.getElementById(`qb-opt-${l}`).value = '');
             document.querySelectorAll('input[name="qb-correct"]').forEach(cb => cb.checked = false);
         }
-
         function addQuestionToQuiz() {
             const qText = document.getElementById('qb-question').value.trim();
-            const opts = {
-                A: document.getElementById('qb-opt-a').value.trim(),
-                B: document.getElementById('qb-opt-b').value.trim(),
-                C: document.getElementById('qb-opt-c').value.trim(),
-                D: document.getElementById('qb-opt-d').value.trim(),
-            };
+            const opts = { A: document.getElementById('qb-opt-a').value.trim(), B: document.getElementById('qb-opt-b').value.trim(), C: document.getElementById('qb-opt-c').value.trim(), D: document.getElementById('qb-opt-d').value.trim() };
             const corrects = Array.from(document.querySelectorAll('input[name="qb-correct"]:checked')).map(cb => cb.value);
-
-            if (!qText || !opts.A || !opts.B || !opts.C || !opts.D || corrects.length === 0) {
-                return alert("Please fill out the question, all 4 options, and select at least one correct answer.");
-            }
-
+            if (!qText || !opts.A || !opts.B || !opts.C || !opts.D || corrects.length === 0) return alert("Please fill out the question, all 4 options, and select at least one correct answer.");
             currentQuizQuestions.push({ question: qText, options: opts, correct_answers: corrects });
-            clearQuestionForm();
-            renderQuestionList();
+            clearQuestionForm(); renderQuestionList();
         }
-
         function renderQuestionList() {
             const list = document.getElementById('qb-question-list');
             document.getElementById('qb-count').textContent = currentQuizQuestions.length;
-            
-            if (currentQuizQuestions.length === 0) {
-                list.innerHTML = '<p class="text-sm text-gray-400 italic">No questions added yet.</p>';
-                return;
-            }
-
+            if (currentQuizQuestions.length === 0) return list.innerHTML = '<div class="h-full flex items-center justify-center text-slate-400 italic text-sm">No questions added yet.</div>';
             list.innerHTML = currentQuizQuestions.map((q, i) => `
-                <div class="bg-white p-3 rounded border shadow-sm text-sm relative">
-                    <p class="font-bold text-gray-800 pr-6">Q${i+1}: ${q.question}</p>
-                    <p class="text-gray-500 mt-1">Ans: <span class="font-bold text-green-600">${q.correct_answers.join(', ')}</span></p>
-                    <button onclick="removeQuestion(${i})" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 font-bold">&times;</button>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-sm relative group">
+                    <p class="font-bold text-slate-800 pr-8">Q${i+1}: ${q.question}</p>
+                    <p class="text-slate-500 mt-2 font-medium">Answer: <span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded ml-1">${q.correct_answers.join(', ')}</span></p>
+                    <button onclick="removeQuestion(${i})" class="absolute top-4 right-4 text-slate-300 hover:text-red-500 bg-slate-50 hover:bg-red-50 p-1.5 rounded-md transition-colors opacity-0 group-hover:opacity-100">&times;</button>
                 </div>
             `).join('');
         }
-
-        function removeQuestion(index) {
-            currentQuizQuestions.splice(index, 1);
-            renderQuestionList();
-        }
-
+        function removeQuestion(index) { currentQuizQuestions.splice(index, 1); renderQuestionList(); }
         async function saveFinalQuiz() {
             const title = document.getElementById('new-quiz-title').value.trim();
             if (!title) return alert("Quiz needs a title.");
             if (currentQuizQuestions.length === 0) return alert("Add at least one question.");
-
             try {
-                await fetch('/api/quizzes/create', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ course_id: courseId, title: title, questions: currentQuizQuestions })
-                });
-                closeQuizBuilder();
-                loadQuizzes();
+                await fetch('/api/quizzes/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ course_id: courseId, title: title, questions: currentQuizQuestions }) });
+                closeQuizBuilder(); loadQuizzes();
             } catch (err) { alert("Failed to save quiz."); }
         }
-
         async function deleteQuiz(id) {
             if (!confirm("Delete this quiz completely? Results will be lost.")) return;
-            try {
-                await fetch(`/api/quizzes/${id}`, { method: 'DELETE' });
-                loadQuizzes();
-            } catch(e) { alert("Error deleting quiz."); }
+            try { await fetch(`/api/quizzes/${id}`, { method: 'DELETE' }); loadQuizzes(); } catch(e) { alert("Error deleting quiz."); }
         }
 
-        // Quiz Results
         async function viewQuizResults(quizId) {
             try {
                 const res = await fetch(`/api/quizzes/${quizId}/results`);
                 const results = await res.json();
-                
                 const tbody = document.getElementById('quiz-results-tbody');
                 tbody.innerHTML = results.length === 0 
-                    ? `<tr><td colspan="4" class="p-6 text-center text-gray-500 italic">No students have taken this quiz yet.</td></tr>`
+                    ? `<tr><td colspan="4" class="p-8 text-center text-slate-500 italic">No students have taken this quiz yet.</td></tr>`
                     : results.map(r => `
-                        <tr class="hover:bg-gray-50 border-b">
-                            <td class="p-3 font-medium">${r.roll_number || 'N/A'}</td>
-                            <td class="p-3">${r.name}</td>
-                            <td class="p-3 font-bold ${r.score >= 50 ? 'text-green-600' : 'text-red-600'}">${r.score}%</td>
-                            <td class="p-3 text-gray-500 text-xs">${new Date(r.submitted_at).toLocaleString()}</td>
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="p-4 font-mono text-slate-500">${r.roll_number || 'N/A'}</td>
+                            <td class="p-4 font-bold text-slate-800">${r.name}</td>
+                            <td class="p-4 text-center"><span class="px-3 py-1 rounded-lg font-bold ${r.score >= 50 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">${r.score}%</span></td>
+                            <td class="p-4 text-right text-slate-500 font-medium">${new Date(r.submitted_at).toLocaleString()}</td>
                         </tr>
                     `).join('');
-
-                const modal = document.getElementById('quiz-results-modal');
-                modal.classList.remove('hidden'); modal.classList.add('flex');
+                document.getElementById('quiz-results-modal').classList.remove('hidden'); document.getElementById('quiz-results-modal').classList.add('flex');
             } catch(e) { alert("Error loading results."); }
         }
-
         function closeResultsModal() {
-            const modal = document.getElementById('quiz-results-modal');
-            modal.classList.add('hidden'); modal.classList.remove('flex');
+            document.getElementById('quiz-results-modal').classList.add('hidden'); document.getElementById('quiz-results-modal').classList.remove('flex');
         }
 
         // ==========================================
-        // 3. ASSIGNMENTS LOGIC (WITH INDEX BUG FIX)
+        // ASSIGNMENTS LOGIC (CARDS & SUBMISSIONS MODAL)
         // ==========================================
-        let currentCourseAssignments = []; // Store data safely in memory
+        let currentCourseAssignments = [];
+        let activeAssignmentIndexForGrading = null; // Keeps track of which modal we are viewing
 
         async function loadAssignments() {
             try {
                 const res = await fetch(`/api/teacher/courses/${courseId}/assignments`);
                 currentCourseAssignments = await res.json();
                 
-                const list = document.getElementById('assignments-list');
-                list.innerHTML = '';
+                const grid = document.getElementById('assignments-grid');
+                grid.innerHTML = '';
 
-                if(currentCourseAssignments.length === 0) return list.innerHTML = '<div class="p-8 text-gray-500 text-center italic">No assignments posted yet.</div>';
+                if(currentCourseAssignments.length === 0) return grid.innerHTML = '<div class="p-12 col-span-full text-slate-500 text-center italic bg-white rounded-2xl border border-slate-200">No assignments posted yet.</div>';
 
                 currentCourseAssignments.forEach((a, aIndex) => {
-                    let submissionsHtml = '';
-                    
-                    if (a.submissions && a.submissions.length > 0) {
-                        submissionsHtml = a.submissions.map((sub, sIndex) => `
-                            <tr class="border-b last:border-0 hover:bg-blue-50">
-                                <td class="p-3 font-medium">${sub.student_name}</td>
-                                <td class="p-3 text-gray-500">${new Date(sub.submitted_at).toLocaleString()}</td>
-                                <td class="p-3 font-bold ${sub.marks_awarded !== null ? 'text-green-600' : 'text-orange-500'}">
-                                    ${sub.marks_awarded !== null ? `${sub.marks_awarded} / ${a.max_marks}` : 'Needs Grading'}
-                                </td>
-                                <td class="p-3 text-right">
-                                    <button onclick="openGradeModal(${aIndex}, ${sIndex})" class="bg-blue-100 text-blue-700 px-3 py-1 rounded font-bold hover:bg-blue-200">Grade</button>
-                                </td>
-                            </tr>
-                        `).join('');
-                    } else {
-                        submissionsHtml = `<tr><td colspan="4" class="p-4 text-center text-gray-400 italic">No submissions yet</td></tr>`;
-                    }
-
-                    list.innerHTML += `
-                        <div class="p-6 hover:bg-gray-50 transition">
-                            <div class="mb-4">
-                                <h3 class="font-bold text-gray-800 text-lg">${a.title}</h3>
-                                <p class="text-sm text-gray-500">Due: ${new Date(a.due_date).toLocaleString()} | Max Marks: ${a.max_marks}</p>
+                    const dueDateObj = new Date(a.due_date);
+                    grid.innerHTML += `
+                        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col group relative">
+                            <div class="p-5 border-b border-slate-100 flex justify-between items-start bg-slate-50/50 rounded-t-2xl">
+                                <div>
+                                    <h3 class="font-bold text-slate-800 text-lg">${a.title}</h3>
+                                    <div class="flex flex-wrap items-center gap-3 mt-2">
+                                        <span class="text-xs font-semibold text-rose-600 bg-red-50 border border-red-100 px-2.5 py-1 rounded-lg flex items-center">
+                                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            ${dueDateObj.toLocaleDateString()} ${dueDateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                        </span>
+                                        <span class="text-xs font-semibold text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg">
+                                            Max Marks: ${a.max_marks}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button onclick='openEditAssignmentModal(${aIndex}, ${JSON.stringify(a).replace(/'/g, "&#39;")})' class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg" title="Edit Assignment">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                    </button>
+                                    <button onclick="deleteAssignment(${a.id})" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg" title="Delete Assignment">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
+                                </div>
                             </div>
-                            <div class="bg-white border rounded-lg overflow-hidden shadow-sm">
-                                <table class="w-full text-left text-sm">
-                                    <thead class="bg-gray-100 border-b">
-                                        <tr>
-                                            <th class="p-3 font-bold text-gray-600">Student Name</th>
-                                            <th class="p-3 font-bold text-gray-600">Submitted At</th>
-                                            <th class="p-3 font-bold text-gray-600">Status</th>
-                                            <th class="p-3 font-bold text-gray-600 text-right">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${submissionsHtml}
-                                    </tbody>
-                                </table>
+
+                            <div class="p-5 text-sm text-slate-600 flex-1 line-clamp-4">
+                                ${a.description}
+                            </div>
+
+                            <div class="p-5 pt-4 border-t border-slate-100 flex justify-between items-center bg-white rounded-b-2xl">
+                                <span class="text-xs font-bold text-slate-500 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm">
+                                    ${a.submissions ? a.submissions.length : 0} Submissions
+                                </span>
+                                <button onclick="openAssignmentSubmissionsModal(${aIndex})" class="text-blue-600 font-bold hover:text-white hover:bg-blue-600 px-4 py-1.5 rounded-lg border border-blue-200 transition-colors text-sm shadow-sm">
+                                    View Submissions
+                                </button>
                             </div>
                         </div>
                     `;
@@ -547,18 +608,89 @@
             };
 
             try {
-                await fetch(`/api/teacher/courses/${courseId}/assignments`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
+                await fetch(`/api/teacher/courses/${courseId}/assignments`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
                 alert('Assignment Posted Successfully!');
                 e.target.reset();
                 loadAssignments();
             } catch (err) { alert('Error posting assignment.'); }
         });
 
-        // Grading Modals - Safely pull text from memory based on index
+        // Edit Flow
+        function openEditAssignmentModal(index, assignment) {
+            document.getElementById('edit-assign-id').value = assignment.id;
+            document.getElementById('edit-assign-title').value = assignment.title;
+            document.getElementById('edit-assign-desc').value = assignment.description;
+            document.getElementById('edit-assign-marks').value = assignment.max_marks;
+            const date = new Date(assignment.due_date);
+            const isoString = new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().slice(0,16);
+            document.getElementById('edit-assign-due').value = isoString;
+            document.getElementById('edit-assignment-modal').classList.remove('hidden');
+            document.getElementById('edit-assignment-modal').classList.add('flex');
+        }
+
+        function closeEditAssignmentModal() {
+            document.getElementById('edit-assignment-modal').classList.add('hidden');
+            document.getElementById('edit-assignment-modal').classList.remove('flex');
+        }
+
+        document.getElementById('edit-assignment-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-assign-id').value;
+            const data = {
+                title: document.getElementById('edit-assign-title').value,
+                description: document.getElementById('edit-assign-desc').value,
+                max_marks: document.getElementById('edit-assign-marks').value,
+                due_date: document.getElementById('edit-assign-due').value
+            };
+            try {
+                await fetch(`/api/teacher/assignments/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                closeEditAssignmentModal(); loadAssignments();
+            } catch (err) { alert('Error updating assignment.'); }
+        });
+
+        async function deleteAssignment(id) {
+            if (!confirm("Are you sure you want to delete this assignment? All student submissions and grades for it will be lost forever.")) return;
+            try { await fetch(`/api/teacher/assignments/${id}`, { method: 'DELETE' }); loadAssignments(); } catch (err) { alert("Error deleting assignment."); }
+        }
+
+        // -------------------------
+        // Assignment Submissions Modal
+        // -------------------------
+        function openAssignmentSubmissionsModal(aIndex) {
+            activeAssignmentIndexForGrading = aIndex;
+            const a = currentCourseAssignments[aIndex];
+            document.getElementById('assign-sub-modal-title').textContent = `Submissions: ${a.title}`;
+            
+            const tbody = document.getElementById('assignment-submissions-tbody');
+            if (a.submissions && a.submissions.length > 0) {
+                tbody.innerHTML = a.submissions.map((sub, sIndex) => `
+                    <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0">
+                        <td class="p-4 font-bold text-slate-800">${sub.student_name}</td>
+                        <td class="p-4 text-slate-500 font-medium">${new Date(sub.submitted_at).toLocaleString()}</td>
+                        <td class="p-4 font-bold ${sub.marks_awarded !== null ? 'text-emerald-600' : 'text-amber-500'}">
+                            ${sub.marks_awarded !== null ? `<span class="bg-emerald-100 px-2 py-1 rounded-lg">${sub.marks_awarded} / ${a.max_marks}</span>` : '<span class="bg-amber-100 px-2 py-1 rounded-lg border border-amber-200">Needs Grading</span>'}
+                        </td>
+                        <td class="p-4 text-right">
+                            <button onclick="openGradeModal(${aIndex}, ${sIndex})" class="bg-white border border-slate-300 text-slate-700 px-4 py-1.5 rounded-lg font-bold hover:bg-slate-100 transition-colors shadow-sm text-xs">Review / Grade</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-400 italic font-medium">No submissions received for this assignment yet.</td></tr>`;
+            }
+
+            document.getElementById('assignment-submissions-modal').classList.remove('hidden'); 
+            document.getElementById('assignment-submissions-modal').classList.add('flex');
+        }
+
+        function closeAssignmentSubmissionsModal() {
+            document.getElementById('assignment-submissions-modal').classList.add('hidden'); 
+            document.getElementById('assignment-submissions-modal').classList.remove('flex');
+        }
+
+        // -------------------------
+        // Grading Modal
+        // -------------------------
         function openGradeModal(aIndex, sIndex) {
             const assignment = currentCourseAssignments[aIndex];
             const submission = assignment.submissions[sIndex];
@@ -569,34 +701,26 @@
             document.getElementById('marks-awarded').value = submission.marks_awarded !== null ? submission.marks_awarded : '';
             document.getElementById('teacher-feedback').value = submission.teacher_feedback || '';
             
-            const modal = document.getElementById('grade-modal');
-            modal.classList.remove('hidden'); 
-            modal.classList.add('flex');
+            document.getElementById('grade-modal').classList.remove('hidden'); 
+            document.getElementById('grade-modal').classList.add('flex');
         }
-
         function closeGradeModal() {
-            const modal = document.getElementById('grade-modal');
-            modal.classList.add('hidden'); 
-            modal.classList.remove('flex');
+            document.getElementById('grade-modal').classList.add('hidden'); 
+            document.getElementById('grade-modal').classList.remove('flex');
         }
-
-        // Submit Grade
         document.getElementById('grade-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const subId = document.getElementById('submission-id').value;
-            const data = {
-                marks_awarded: document.getElementById('marks-awarded').value,
-                feedback: document.getElementById('teacher-feedback').value
-            };
-
+            const data = { marks_awarded: document.getElementById('marks-awarded').value, feedback: document.getElementById('teacher-feedback').value };
             try {
-                await fetch(`/api/teacher/assignments/grade/${subId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                closeGradeModal();
-                loadAssignments(); // Refresh list to show green "Graded" status
+                await fetch(`/api/teacher/assignments/grade/${subId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                closeGradeModal(); 
+                await loadAssignments(); // Pull fresh data
+                
+                // Keep the submissions modal open, just refresh its inner data
+                if(activeAssignmentIndexForGrading !== null) {
+                    openAssignmentSubmissionsModal(activeAssignmentIndexForGrading);
+                }
             } catch (err) { alert('Error saving grade.'); }
         });
 

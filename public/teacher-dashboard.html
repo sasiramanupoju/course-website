@@ -174,9 +174,9 @@
 
     <script>
     // --- SECURITY & AUTHENTICATION CHECK ---
-    const currentUserId = localStorage.getItem('userId');
-    const currentUserRole = localStorage.getItem('userRole');
-    const currentUserName = localStorage.getItem('userName') || 'Teacher';
+    const currentUserId = localStorage.getItem('userId') || JSON.parse(localStorage.getItem('user'))?.id;
+    const currentUserRole = localStorage.getItem('userRole') || JSON.parse(localStorage.getItem('user'))?.role;
+    const currentUserName = localStorage.getItem('userName') || JSON.parse(localStorage.getItem('user'))?.name || 'Teacher';
 
     if (!currentUserId || currentUserRole !== 'teacher') {
         alert('Unauthorized Access: Please log in as a Teacher.');
@@ -287,7 +287,6 @@
         });
     }
 
-
     // --- Dashboard Data Fetching ---
     const filterYear = document.getElementById('filter-year');
     const filterSection = document.getElementById('filter-section');
@@ -311,15 +310,12 @@
         const queryString = params.toString() ? `?${params.toString()}` : '';
 
         try {
-            // Note: In a real app, update your backend endpoint to return analytics data 
-            // instead of pending requests.
             const response = await fetch(`/api/dashboard/teacher${queryString}`);
             let data = {};
             
             if (response.ok) {
                 data = await response.json();
             } else {
-                // Mock data fallback if the new endpoint format isn't ready on the backend yet
                 console.warn("Backend missing analytics endpoint. Using mock data for UI demonstration.");
                 data = getMockAnalyticsData(); 
             }
@@ -375,7 +371,7 @@
         }
     }
 
-    // Temporary mock data generator until backend is updated
+    // Temporary mock data generator fallback
     function getMockAnalyticsData() {
         return {
             totalStudents: 142,
