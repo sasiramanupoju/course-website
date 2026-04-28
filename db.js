@@ -41,3 +41,7 @@ pool.connect((err, client, release) => {
 });
 
 module.exports = pool;
+
+pool.on('error', (err) => {
+  console.error('Unexpected database error:', err.message);
+});
