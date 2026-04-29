@@ -31,6 +31,7 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({ storage: storage, fileFilter: fileFilter, limits: { fileSize: 10 * 1024 * 1024 } });
 
+
 // ==========================================
 // AUTHENTICATION
 // ==========================================
@@ -605,5 +606,5 @@ app.post('/api/attendance/report', async (req, res) => {
   } catch (err) { res.status(500).send('Server Error.'); }
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
